@@ -1,0 +1,351 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0A5EA601C79D2CE2CB315C6C /* BackgroundRefreshMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC69E2D2BF7E28D82B16B814 /* BackgroundRefreshMonitor.swift */; };
+		42BFF24125B0993FE271FD26 /* MotionActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4162D99E6577FBA8C293FA9B /* MotionActivityMonitor.swift */; };
+		46D68AE6E3ADAA22957D82C4 /* LocationSLCMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3937EE8FC5DFC6FF4F14B139 /* LocationSLCMonitor.swift */; };
+		4974B631685AC136862D895E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 315EF3572CB94FED66D4A093 /* ContentView.swift */; };
+		7F1FDCDF84E87285CC66C38B /* AnhaoSpikeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B073A1BCED945BD8600CDA9 /* AnhaoSpikeApp.swift */; };
+		815DAB8110586E8292FDA5BE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 96CFB13AE76CAD09B4F3CC2A /* Assets.xcassets */; };
+		933AA421B28529FC8333CCFB /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1250EED3813E9E67D96DB09C /* Logger.swift */; };
+		A2F9485FBF516CE344BB93FB /* Reporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB967F9DB6382966FD6A6ED /* Reporter.swift */; };
+		B070098FD8F906A5BFFAECB2 /* MonitorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8375A39C8866D9E013B4FAC4 /* MonitorManager.swift */; };
+		FCDC050EB07FAA31A792FEA2 /* ChargingMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6896F4AB7256EE14D59C78 /* ChargingMonitor.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1250EED3813E9E67D96DB09C /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		2B073A1BCED945BD8600CDA9 /* AnhaoSpikeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnhaoSpikeApp.swift; sourceTree = "<group>"; };
+		315EF3572CB94FED66D4A093 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		3937EE8FC5DFC6FF4F14B139 /* LocationSLCMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSLCMonitor.swift; sourceTree = "<group>"; };
+		4162D99E6577FBA8C293FA9B /* MotionActivityMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionActivityMonitor.swift; sourceTree = "<group>"; };
+		8375A39C8866D9E013B4FAC4 /* MonitorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorManager.swift; sourceTree = "<group>"; };
+		8DB967F9DB6382966FD6A6ED /* Reporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reporter.swift; sourceTree = "<group>"; };
+		8E6896F4AB7256EE14D59C78 /* ChargingMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChargingMonitor.swift; sourceTree = "<group>"; };
+		96CFB13AE76CAD09B4F3CC2A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AC69E2D2BF7E28D82B16B814 /* BackgroundRefreshMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshMonitor.swift; sourceTree = "<group>"; };
+		E738C4084ED4EAF4F3DA1EC8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		EDA33A5FA1A322D1B3000F1D /* AnhaoSpike.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AnhaoSpike.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		12E284127D66F1F0672A3416 /* Monitors */ = {
+			isa = PBXGroup;
+			children = (
+				AC69E2D2BF7E28D82B16B814 /* BackgroundRefreshMonitor.swift */,
+				8E6896F4AB7256EE14D59C78 /* ChargingMonitor.swift */,
+				3937EE8FC5DFC6FF4F14B139 /* LocationSLCMonitor.swift */,
+				4162D99E6577FBA8C293FA9B /* MotionActivityMonitor.swift */,
+			);
+			path = Monitors;
+			sourceTree = "<group>";
+		};
+		4AD52AF2F349FBD0550E7FC0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EDA33A5FA1A322D1B3000F1D /* AnhaoSpike.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8DEE303C8B77FA015E820EB6 = {
+			isa = PBXGroup;
+			children = (
+				BFDEBF16EE33A509DFBDECFE /* AnhaoSpike */,
+				4AD52AF2F349FBD0550E7FC0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BFDEBF16EE33A509DFBDECFE /* AnhaoSpike */ = {
+			isa = PBXGroup;
+			children = (
+				2B073A1BCED945BD8600CDA9 /* AnhaoSpikeApp.swift */,
+				96CFB13AE76CAD09B4F3CC2A /* Assets.xcassets */,
+				315EF3572CB94FED66D4A093 /* ContentView.swift */,
+				E738C4084ED4EAF4F3DA1EC8 /* Info.plist */,
+				1250EED3813E9E67D96DB09C /* Logger.swift */,
+				8375A39C8866D9E013B4FAC4 /* MonitorManager.swift */,
+				8DB967F9DB6382966FD6A6ED /* Reporter.swift */,
+				12E284127D66F1F0672A3416 /* Monitors */,
+			);
+			path = AnhaoSpike;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		080AC588F6511A9C62A08C1C /* AnhaoSpike */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3D5DE104ACD53A5BEA2328BB /* Build configuration list for PBXNativeTarget "AnhaoSpike" */;
+			buildPhases = (
+				4C6E1417A4954E9064DD683E /* Sources */,
+				E513169F7161EF32DCC727A0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AnhaoSpike;
+			packageProductDependencies = (
+			);
+			productName = AnhaoSpike;
+			productReference = EDA33A5FA1A322D1B3000F1D /* AnhaoSpike.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7320909592285C3C144819C4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					080AC588F6511A9C62A08C1C = {
+						DevelopmentTeam = J4RT98GF7B;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 4BD52D3481D65E07930BC647 /* Build configuration list for PBXProject "AnhaoSpike" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 8DEE303C8B77FA015E820EB6;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 4AD52AF2F349FBD0550E7FC0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				080AC588F6511A9C62A08C1C /* AnhaoSpike */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E513169F7161EF32DCC727A0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				815DAB8110586E8292FDA5BE /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4C6E1417A4954E9064DD683E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F1FDCDF84E87285CC66C38B /* AnhaoSpikeApp.swift in Sources */,
+				0A5EA601C79D2CE2CB315C6C /* BackgroundRefreshMonitor.swift in Sources */,
+				FCDC050EB07FAA31A792FEA2 /* ChargingMonitor.swift in Sources */,
+				4974B631685AC136862D895E /* ContentView.swift in Sources */,
+				46D68AE6E3ADAA22957D82C4 /* LocationSLCMonitor.swift in Sources */,
+				933AA421B28529FC8333CCFB /* Logger.swift in Sources */,
+				B070098FD8F906A5BFFAECB2 /* MonitorManager.swift in Sources */,
+				42BFF24125B0993FE271FD26 /* MotionActivityMonitor.swift in Sources */,
+				A2F9485FBF516CE344BB93FB /* Reporter.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		39F5B20999E872A4FF0A8F5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = AnhaoSpike/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.eastlakestudio.stillhere;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		691E9DC7CFB12A97A7B2CF4C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = J4RT98GF7B;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		7929F2BC37A890146D9BD57E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = J4RT98GF7B;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		DB0A8A8AC597236D6E20AE85 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = AnhaoSpike/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.eastlakestudio.stillhere;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3D5DE104ACD53A5BEA2328BB /* Build configuration list for PBXNativeTarget "AnhaoSpike" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DB0A8A8AC597236D6E20AE85 /* Debug */,
+				39F5B20999E872A4FF0A8F5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4BD52D3481D65E07930BC647 /* Build configuration list for PBXProject "AnhaoSpike" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7929F2BC37A890146D9BD57E /* Debug */,
+				691E9DC7CFB12A97A7B2CF4C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7320909592285C3C144819C4 /* Project object */;
+}

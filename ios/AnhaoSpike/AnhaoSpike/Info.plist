@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.eastlakestudio.stillhere.refresh</string>
+	</array>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>安好</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>独居安全监测需要定位权限以检测您的活动状态。仅在位置显著变化时唤醒 App 上报，不记录您的具体坐标。</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>独居安全监测需要始终定位权限，以在后台被杀后仍能唤醒 App 上报活动。</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>独居安全监测需要定位权限以检测您的活动状态。</string>
+	<key>NSMotionUsageDescription</key>
+	<string>独居安全监测需要运动权限以检测您的活动状态变化（走路/静止等）。</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>motion</string>
+		<string>remote-notification</string>
+	</array>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string></string>
+	</dict>
+</dict>
+</plist>

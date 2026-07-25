@@ -1,0 +1,23 @@
+# Xcode
+*.xcuserdata
+*.xcworkspace
+DerivedData/
+build/
+
+# CocoaPods
+Pods/
+
+# Swift Package Manager
+.build/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# macOS
+.DS_Store
+Thumbs.db
+
+# Node (for any scripts)
+node_modules/
+
+# IDE
+.idea/
+.vscode/
