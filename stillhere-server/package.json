@@ -1,0 +1,17 @@
+{
+  "name": "stillhere-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute stillhere-db --file=./schema.sql",
+    "db:local": "wrangler d1 execute stillhere-db --file=./schema.sql --local"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250722.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
+  }
+}

@@ -1,0 +1,19 @@
+name = "stillhere-api"
+main = "src/index.ts"
+compatibility_date = "2025-07-22"
+
+# D1 数据库绑定（部署后回填 database_id）
+[[d1_databases]]
+binding = "DB"
+database_name = "stillhere-db"
+database_id = "fd0df397-0ccb-4318-95ae-9c5fa85b5fd2"
+
+# Cron 触发器：每 5 分钟执行 watchdog 巡检
+[triggers]
+crons = ["*/5 * * * *"]
+
+# 预留多 Worker 扩展（当前单 Worker）
+# [env.production] ...
+
+[observability]
+enabled = true
