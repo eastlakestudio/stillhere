@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0525444A1AD8467CAC9EA156 /* CareStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D2C04D20E704C1EB68DD593 /* CareStore.swift */; };
 		0A5EA601C79D2CE2CB315C6C /* BackgroundRefreshMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC69E2D2BF7E28D82B16B814 /* BackgroundRefreshMonitor.swift */; };
 		42BFF24125B0993FE271FD26 /* MotionActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4162D99E6577FBA8C293FA9B /* MotionActivityMonitor.swift */; };
 		46D68AE6E3ADAA22957D82C4 /* LocationSLCMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3937EE8FC5DFC6FF4F14B139 /* LocationSLCMonitor.swift */; };
@@ -20,6 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0D2C04D20E704C1EB68DD593 /* CareStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareStore.swift; sourceTree = "<group>"; };
 		1250EED3813E9E67D96DB09C /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		2B073A1BCED945BD8600CDA9 /* AnhaoSpikeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnhaoSpikeApp.swift; sourceTree = "<group>"; };
 		315EF3572CB94FED66D4A093 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -73,7 +75,8 @@
 				8375A39C8866D9E013B4FAC4 /* MonitorManager.swift */,
 				8DB967F9DB6382966FD6A6ED /* Reporter.swift */,
 				12E284127D66F1F0672A3416 /* Monitors */,
-			);
+			
+				0D2C04D20E704C1EB68DD593 /* CareStore.swift */,);
 			path = AnhaoSpike;
 			sourceTree = "<group>";
 		};
@@ -157,7 +160,8 @@
 				B070098FD8F906A5BFFAECB2 /* MonitorManager.swift in Sources */,
 				42BFF24125B0993FE271FD26 /* MotionActivityMonitor.swift in Sources */,
 				A2F9485FBF516CE344BB93FB /* Reporter.swift in Sources */,
-			);
+			
+				0525444A1AD8467CAC9EA156 /* CareStore.swift in Sources */,);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */

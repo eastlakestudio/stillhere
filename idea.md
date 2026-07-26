@@ -1,4 +1,13 @@
-这是一份为 “还在” (Still Here) 独居安全监控 App 量身定制的全系统开发指南。
+<!--
+  本文为原始方案参考，实际实施以 `openspec/changes/migrate-to-cloudflare-workers/` 为准。
+  当前架构已偏离本文多处：
+  - 后端从 Laf (MongoDB) 迁移至 Cloudflare Workers + D1 (SQLite)
+  - APNs 从 npm apn 包改为 Web Crypto + HTTP/2 Provider API
+  - iOS 监测从 Timer 改为事件驱动（SLC + CoreMotion + BGRefresh + 充电）
+  - 告警从服务端 Cron watchdog 改为客户端本地裁决
+-->
+
+这是一份为 "还在" (Still Here) 独居安全监控 App 量身定制的全系统开发指南。
 整套方案采用 iOS App (Swift) + Laf (laf.run 云开发) + APNs (苹果推送) 架构。零独立服务器成本，全套逻辑均可在免费或极低成本下跑通。
 目录结构
 1. 第一部分：APNs 推送密钥申请

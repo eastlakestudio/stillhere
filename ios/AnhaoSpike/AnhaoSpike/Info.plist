@@ -24,6 +24,8 @@
 	<string>0.1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSCameraUsageDescription</key>
+	<string>扫码添加家人时需要相机权限来扫描关心码。</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>独居安全监测需要定位权限以检测您的活动状态。仅在位置显著变化时唤醒 App 上报，不记录您的具体坐标。</string>
 	<key>NSLocationAlwaysUsageDescription</key>

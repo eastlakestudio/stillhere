@@ -8,12 +8,17 @@ binding = "DB"
 database_name = "stillhere-db"
 database_id = "fd0df397-0ccb-4318-95ae-9c5fa85b5fd2"
 
-# Cron 触发器：每 5 分钟执行 watchdog 巡检
-[triggers]
-crons = ["*/5 * * * *"]
+# 服务端不再主动判超时告警，告警逻辑由客户端本地基于作息时间自行裁决
+# 客户端约每小时上报周期心跳，供关心人查看在线状态
 
 # 预留多 Worker 扩展（当前单 Worker）
 # [env.production] ...
+
+workers_dev = true
+
+# Cron 触发器：每 5 分钟执行 watchdog 离线检测
+[triggers]
+crons = ["*/5 * * * *"]
 
 [observability]
 enabled = true

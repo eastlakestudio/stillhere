@@ -1,6 +1,13 @@
 import { handleHeartbeat } from './routes/heartbeat';
-import { handleBindCode } from './routes/bind-code';
-import { handleBindUser } from './routes/bind-user';
+import { handleCare } from './routes/care';
+import { handleCaredStatus } from './routes/cared-status';
+import { handleCaredByMe } from './routes/cared-by-me';
+import { handleGreeting } from './routes/greeting';
+import { handleDashboard } from './routes/dashboard';
+import { handleAlert } from './routes/alert';
+import { handlePendingAlerts } from './routes/pending-alerts';
+import { handleCallback, redirectToGoogle, logout } from './lib/auth';
+import { landingPage } from './pages/landing';
 import { runWatchdog } from './cron/watchdog';
 import { Env, jsonResponse } from './shared';
 
@@ -9,7 +16,7 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // CORS 预检
+    // CORS 预检（仅 API 路由需要）
     if (request.method === 'OPTIONS') {
       const resp = new Response(null, { status: 204 });
       resp.headers.set('Access-Control-Allow-Origin', '*');
@@ -20,12 +27,35 @@ export default {
 
     try {
       switch (path) {
+        case '/':
+          return new Response(landingPage(), {
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          });
         case '/heartbeat':
           return await handleHeartbeat(request, env);
-        case '/generate-bind-code':
-          return await handleBindCode(request, env);
-        case '/bind-user':
-          return await handleBindUser(request, env);
+        case '/care':
+          return await handleCare(request, env);
+        case '/cared-status':
+          return await handleCaredStatus(request, env);
+        case '/dashboard':
+          return await handleDashboard(request, env);
+        case '/alert':
+        case '/alert/cancel':
+          return await handleAlert(request, env);
+        case '/pending-alerts':
+          return await handlePendingAlerts(request, env);
+        case '/cared-by-me':
+          return await handleCaredByMe(request, env);
+        case '/greeting':
+        case '/greeting/reply':
+        case '/pending-greetings':
+          return await handleGreeting(request, env);
+        case '/auth/login':
+          return redirectToGoogle(request, env);
+        case '/auth/callback':
+          return await handleCallback(request, env);
+        case '/auth/logout':
+          return logout(request);
         default:
           return jsonResponse({ error: 'not found' }, 404);
       }
@@ -34,8 +64,8 @@ export default {
     }
   },
 
-  // Cron 触发器：每 5 分钟 watchdog 巡检
-  async scheduled(_event: ScheduledEvent, env: Env): Promise<void> {
+  async scheduled(controller: ScheduledController, env: Env): Promise<void> {
+    console.log(`[cron] watchdog triggered at ${controller.cron}`);
     await runWatchdog(env);
   },
 };

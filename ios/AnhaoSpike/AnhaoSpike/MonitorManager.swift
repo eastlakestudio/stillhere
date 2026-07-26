@@ -1,6 +1,43 @@
 import Combine
 import Foundation
 import SwiftUI
+import UserNotifications
+
+// MARK: - 监测时段模型
+
+/// 监测活动时段（与 Android TimeWindow 对齐）
+struct TimeWindow: Codable, Equatable, Identifiable {
+    var id: String { "\(startHour):\(startMinute)-\(endHour):\(endMinute)-\(label)" }
+    var startHour: Int = 9
+    var startMinute: Int = 0
+    var endHour: Int = 18
+    var endMinute: Int = 0
+    var label: String = ""
+
+    /// 开始时间转为分钟数 (0-1439)
+    var startMinutes: Int { startHour * 60 + startMinute }
+    /// 结束时间转为分钟数 (0-1439)
+    var endMinutes: Int { endHour * 60 + endMinute }
+
+    /// 格式化显示
+    var displayText: String {
+        let s = String(format: "%02d:%02d", startHour, startMinute)
+        let e = String(format: "%02d:%02d", endHour, endMinute)
+        return "\(s) – \(e)"
+    }
+
+    /// 检查给定分钟数是否在此窗口内
+    func contains(minutes: Int) -> Bool {
+        if endMinutes > startMinutes {
+            return minutes >= startMinutes && minutes < endMinutes
+        } else {
+            // 跨日（如 22:00–06:00）
+            return minutes >= startMinutes || minutes < endMinutes
+        }
+    }
+
+    static let `default` = TimeWindow(startHour: 0, startMinute: 0, endHour: 23, endMinute: 59, label: "")
+}
 
 /// 监测器统一接口
 protocol Monitor: AnyObject {
@@ -9,16 +46,26 @@ protocol Monitor: AnyObject {
     func stop()
 }
 
-/// 监测器总管：管理生命周期 + 统一记录/上报流程
+/// 监测器总管：管理生命周期 + 周期心跳 + 本地告警
 @MainActor
 final class MonitorManager: ObservableObject, Sendable {
 
     let logger = Logger()
 
+    /// CareStore 引用（由 App 注入，用于更新心跳返回的 caredByCount）
+    weak var careStore: CareStore?
+
     @Published private(set) var isRunning = false
 
-    /// 各监测器开关。逐个排查崩溃源：先只保留 Charging
-    @Published var enabledMonitors: Set<String> = ["SLC", "Motion", "BGAppRefresh", "Charging"]
+    /// 最近一次上报状态（调试用）
+    @Published private(set) var lastReportStatus: String = "等待上报…"
+
+    /// 待确认告警：本机检测到告警后，5分钟内用户可取消，超时后才上报服务器
+    @Published var pendingAlertMinutes: Int? = nil
+    private var pendingAlertTimer: Timer?
+
+    /// 各监测器开关
+    @Published var enabledMonitors: Set<String> = ["SLC", "Motion", "BGAppRefresh", "Charging", "Foreground", "Alert"]
 
     /// Cloudflare Worker 基地址（用户在 UI 输入，留空则用默认值）
     @Published var baseURLString: String = "" {
@@ -52,14 +99,110 @@ final class MonitorManager: ObservableObject, Sendable {
         }
     }
 
+    /// 是否处于告警中（用于检测活动恢复时取消告警）
+    private var isAlerted: Bool {
+        get { UserDefaults.standard.bool(forKey: "anhao.spike.isAlerted") }
+        set { UserDefaults.standard.set(newValue, forKey: "anhao.spike.isAlerted") }
+    }
+
+    /// 最后心跳时间（持久化）
+    private var lastHeartbeatTime: Date {
+        get {
+            let ts = UserDefaults.standard.double(forKey: "anhao.spike.lastHeartbeat")
+            return ts > 0 ? Date(timeIntervalSince1970: ts) : .distantPast
+        }
+        set {
+            UserDefaults.standard.set(newValue.timeIntervalSince1970, forKey: "anhao.spike.lastHeartbeat")
+        }
+    }
+
+    // MARK: - 可配置监测时段
+
+    private static let keyWindows = "anhao.spike.monitoringWindows"
+    private static let keyMigrated = "anhao.spike.migratedToWindows"
+
+    /// 监测活动时段列表，仅在时段内才触发空闲告警
+    var monitoringWindows: [TimeWindow] {
+        get {
+            migrateIfNeeded()
+            guard let data = UserDefaults.standard.data(forKey: Self.keyWindows),
+                  let decoded = try? JSONDecoder().decode([TimeWindow].self, from: data),
+                  !decoded.isEmpty else {
+                return [.default]
+            }
+            return decoded
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                UserDefaults.standard.set(data, forKey: Self.keyWindows)
+            }
+        }
+    }
+
+    /// 旧数据迁移：wakeHour/sleepHour → monitoringWindows
+    private func migrateIfNeeded() {
+        if UserDefaults.standard.bool(forKey: Self.keyMigrated) { return }
+        let wake = UserDefaults.standard.integer(forKey: "anhao.spike.wakeHour")
+        let sleep = UserDefaults.standard.integer(forKey: "anhao.spike.sleepHour")
+        if wake == 0 && sleep == 0 {
+            UserDefaults.standard.set(true, forKey: Self.keyMigrated)
+            return
+        }
+        var windows: [TimeWindow] = []
+        let w = wake == 0 ? 7 : wake
+        let s = sleep == 0 ? 22 : sleep
+        if w < s {
+            windows.append(TimeWindow(startHour: w, startMinute: 0, endHour: s, endMinute: 0, label: ""))
+        } else {
+            windows.append(.default)
+        }
+        if let data = try? JSONEncoder().encode(windows) {
+            UserDefaults.standard.set(data, forKey: Self.keyWindows)
+        }
+        UserDefaults.standard.set(true, forKey: Self.keyMigrated)
+        // 删除旧键
+        UserDefaults.standard.removeObject(forKey: "anhao.spike.wakeHour")
+        UserDefaults.standard.removeObject(forKey: "anhao.spike.sleepHour")
+    }
+
+    /// 检查当前时间是否在任一监测时段内
+    func isInMonitoringWindow() -> Bool {
+        let calendar = Calendar.current
+        let now = Date()
+        let hour = calendar.component(.hour, from: now)
+        let minute = calendar.component(.minute, from: now)
+        let minutes = hour * 60 + minute
+        return monitoringWindows.contains { $0.contains(minutes: minutes) }
+    }
+
+    /// 空闲告警阈值（分钟），默认 30
+    var idleAlertMinutes: Int {
+        get { max(UserDefaults.standard.integer(forKey: "anhao.spike.idleAlertMinutes"), 5) }
+        set { UserDefaults.standard.set(newValue, forKey: "anhao.spike.idleAlertMinutes") }
+    }
+
+    /// 周期心跳计时器
+    private var heartbeatTimer: Timer?
+
+    /// 当前充电状态
+    private var isCharging: Bool {
+        let state = UIDevice.current.batteryState
+        return state == .charging || state == .full
+    }
+
     private var cancellables = Set<AnyCancellable>()
 
     init() {
+        // 默认值
+        if UserDefaults.standard.integer(forKey: "anhao.spike.idleAlertMinutes") == 0 {
+            idleAlertMinutes = 30
+        }
+
         // 启动时从 UserDefaults 恢复自定义 URL
         if let saved = UserDefaults.standard.string(forKey: "anhao.spike.baseURL"), !saved.isEmpty {
             baseURLString = saved
         }
-        // 转发 logger 的 objectWillChange，确保 logger 更新时 UI 刷新
+        // 转发 logger 的 objectWillChange
         logger.objectWillChange
             .sink { [weak self] _ in
                 self?.objectWillChange.send()
@@ -93,7 +236,12 @@ final class MonitorManager: ObservableObject, Sendable {
             charging = ChargingMonitor(onWake: wake)
             charging?.start()
         }
-        // Foreground 由 App scenePhase 触发，无独立监测器
+
+        // 启动周期心跳
+        startPeriodicHeartbeat()
+
+        // 启动时立即发送心跳（让关心人看到「刚刚活跃」、刷新被关心人数）
+        sendHeartbeatNow()
     }
 
     func stopAll() {
@@ -102,36 +250,132 @@ final class MonitorManager: ObservableObject, Sendable {
         motion?.stop(); motion = nil
         bgRefresh?.stop(); bgRefresh = nil
         charging?.stop(); charging = nil
+        stopPeriodicHeartbeat()
     }
 
-    /// 前台切入触发（由 App scenePhase 调用）
+    // MARK: - 周期心跳（约每小时一次）
+
+    private func startPeriodicHeartbeat() {
+        heartbeatTimer?.invalidate()
+        // 每分钟检查一次是否到了心跳间隔
+        heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.checkAndSendHeartbeat()
+            }
+        }
+    }
+
+    private func stopPeriodicHeartbeat() {
+        heartbeatTimer?.invalidate()
+        heartbeatTimer = nil
+    }
+
+    private func checkAndSendHeartbeat() {
+        let elapsed = Date().timeIntervalSince(lastHeartbeatTime)
+        if elapsed >= 3600 { // 1 小时
+            sendHeartbeat()
+        }
+    }
+
+    /// 立即发送心跳（前台切入时调用）
+    func sendHeartbeatNow() {
+        Task { @MainActor in
+            sendHeartbeat()
+        }
+    }
+
+    private func sendHeartbeat() {
+        lastHeartbeatTime = Date()
+        Task {
+            let result = await Reporter.shared.report(source: "Periodic", event: "heartbeat", appState: AppState.current(), isCharging: isCharging)
+            let timeStr = Date().formatted(.dateTime.hour().minute().second())
+            if result.ok {
+                lastReportStatus = "✅ 心跳 \(timeStr)"
+                careStore?.caredByCount = result.caredByCount
+            } else {
+                lastReportStatus = "❌ 心跳失败 \(timeStr)"
+            }
+            print("[MonitorManager] heartbeat result: \(result.ok), caredBy: \(result.caredByCount)")
+        }
+    }
+
+    // MARK: - 前台切入
+
     func reportForeground() {
         wake(source: "Foreground", event: "app entered foreground")
+        // 前台切入立即发送心跳（让关心人看到"刚刚活跃"）
+        sendHeartbeatNow()
+        // 检查本地告警
         checkLocalAlert()
     }
 
-    /// 检查是否需要生成本地告警（18:00-22:00，超过5分钟无活动）
+    /// 检查是否需要生成本地告警（基于用户可配置时段）
     private func checkLocalAlert() {
+        // 检查是否在监测时段内
+        guard isInMonitoringWindow() else { return }
+
         let now = Date()
 
-        // 时段判断：每天 18:00 - 22:00
-        let calendar = Calendar.current
-        guard let hour = calendar.dateComponents([.hour], from: now).hour,
-              hour >= 18, hour < 22 else {
-            return
-        }
-
-        // 无活动超过 5 分钟
+        // 空闲超过阈值
         let idleSeconds = now.timeIntervalSince(lastActivityTime)
-        guard idleSeconds > 5 * 60 else { return }
+        guard idleSeconds > Double(idleAlertMinutes * 60) else { return }
 
         // 避免同一时段重复告警（5 分钟内不重复）
         guard now.timeIntervalSince(lastAlertTime) > 5 * 60 else { return }
 
         lastAlertTime = now
+        isAlerted = true
         let idleMinutes = Int(idleSeconds / 60)
         let event = "⚠️ 告警：已 \(idleMinutes) 分钟无活动"
         wake(source: "Alert", event: event)
+
+        // 显示本地通知
+        let content = UNMutableNotificationContent()
+        content.title = "安好 · 活动超时提醒"
+        content.body = "已 \(idleMinutes) 分钟无活动，5分钟内未取消将通知关心人"
+        content.sound = .default
+        let req = UNNotificationRequest(identifier: "alert-\(Date().timeIntervalSince1970)", content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(req)
+
+        // 设置 5 分钟延迟计时器，超时后才上报服务器
+        pendingAlertMinutes = idleMinutes
+        pendingAlertTimer?.invalidate()
+        pendingAlertTimer = Timer.scheduledTimer(withTimeInterval: 5 * 60, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                self?.firePendingAlert()
+            }
+        }
+
+        // 立即上报心跳，让关心人看到异常状态
+        sendHeartbeatNow()
+    }
+
+    /// 超时后执行：上报告警到服务器
+    private func firePendingAlert() {
+        guard let idleMinutes = pendingAlertMinutes else { return }
+        pendingAlertMinutes = nil
+        pendingAlertTimer?.invalidate()
+        pendingAlertTimer = nil
+        Task {
+            let ok = await Reporter.shared.reportAlert(idleMinutes: idleMinutes, isCharging: isCharging)
+            print("[MonitorManager] firePendingAlert result: \(ok)")
+        }
+    }
+
+    /// 用户取消待确认告警
+    func cancelPendingAlert() {
+        guard pendingAlertMinutes != nil else { return }
+        pendingAlertMinutes = nil
+        pendingAlertTimer?.invalidate()
+        pendingAlertTimer = nil
+        lastAlertTime = .distantPast  // 允许再次触发
+        isAlerted = false
+        Task {
+            let ok = await Reporter.shared.cancelAlert()
+            print("[MonitorManager] cancelPendingAlert result: \(ok)")
+        }
+        // 移除通知
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
     }
 
     // MARK: - 唤醒入口（可从任意线程调用）
@@ -144,16 +388,25 @@ final class MonitorManager: ObservableObject, Sendable {
 
     // MARK: - Internal
 
+    /// 唤醒处理：仅记录活动时间 + 日志，不再每次事件都上报心跳
     private func handleWake(source: String, event: String) {
         lastActivityTime = Date()
         let appState = AppState.current()
-        let entry = logger.record(source: source, event: event, appState: appState, reportedRemote: false)
-        Task {
-            let ok = await Reporter.shared.report(source: source, event: event, appState: appState)
-            if ok {
-                logger.markReported(id: entry.id)
+        let entry = logger.record(source: source, event: event, appState: appState, reportedRemote: true)
+        print("[MonitorManager] wake source=\(source) event=\(event)")
+
+        // 如果之前处于告警状态 → 活动恢复，取消告警
+        if isAlerted {
+            isAlerted = false
+            lastAlertTime = .distantPast
+            Task {
+                let ok = await Reporter.shared.cancelAlert()
+                print("[MonitorManager] cancelAlert result: \(ok)")
             }
         }
+
+        // 日志标记为"已上报"（默认状态，实际心跳由周期任务负责）
+        logger.markReported(id: entry.id)
     }
 
     private func syncBaseURL() {

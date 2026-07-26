@@ -27,7 +27,11 @@ final class Logger: ObservableObject {
     @Published private(set) var entries: [LogEntry] = []
     @Published private(set) var stats: [String: Int] = [:]   // 按监测器统计唤醒次数
 
+    /// 服务端返回的被关心人数
+    @Published var remoteCaredByCount: Int = 0
+
     private let maxEntries = 1000
+    private let maxAgeSeconds: TimeInterval = 24 * 60 * 60  // 仅保留 24 小时
     private let storageKey = "anhao.spike.logs.v1"
 
     init() {
@@ -45,6 +49,8 @@ final class Logger: ObservableObject {
     func markReported(id: UUID) {
         guard let idx = entries.firstIndex(where: { $0.id == id }) else { return }
         entries[idx].reportedRemote = true
+        // 触发 @Published 变更通知（struct 原地修改不会被检测到）
+        objectWillChange.send()
         persist()
     }
 
@@ -58,18 +64,25 @@ final class Logger: ObservableObject {
 
     private func append(_ entry: LogEntry) {
         entries.insert(entry, at: 0)
+        filterRecent()
+    }
+
+    private func filterRecent() {
+        let cutoff = Date().addingTimeInterval(-maxAgeSeconds)
+        entries = entries.filter { $0.timestamp > cutoff }
         if entries.count > maxEntries {
             entries = Array(entries.prefix(maxEntries))
         }
-        stats[entry.source, default: 0] += 1
+        stats = Dictionary(grouping: entries, by: { $0.source }).mapValues { $0.count }
         persist()
     }
 
     private func loadFromDisk() {
         guard let data = UserDefaults.standard.data(forKey: storageKey),
               let decoded = try? JSONDecoder().decode([LogEntry].self, from: data) else { return }
-        entries = decoded
-        stats = Dictionary(grouping: decoded, by: { $0.source }).mapValues { $0.count }
+        let cutoff = Date().addingTimeInterval(-maxAgeSeconds)
+        entries = decoded.filter { $0.timestamp > cutoff }
+        stats = Dictionary(grouping: entries, by: { $0.source }).mapValues { $0.count }
     }
 
     private func persist() {
