@@ -53,7 +53,7 @@ struct ContentView: View {
         let hStr = hours.truncatingRemainder(dividingBy: 1) == 0
             ? String(format: "%.0f", hours)
             : String(format: "%.1f", hours)
-        return "\(count) 个时段 · 共 \(hStr) 小时"
+        return "守护 \(count) 个时段 · 共 \(hStr) 小时"
     }
 
     private func accentForWindow(_ idx: Int) -> Color {
@@ -253,7 +253,7 @@ struct ContentView: View {
                     .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
 
                     HStack(spacing: 10) {
-                    // 报送平安（持续监测开关）
+                    // 报送平安（持续守护开关）
                     Button {
                         if manager.isRunning {
                             manager.stopAll()
@@ -265,7 +265,7 @@ struct ContentView: View {
                             Circle()
                                 .fill(manager.isRunning ? Color.green : Color.gray.opacity(0.4))
                                 .frame(width: 10, height: 10)
-                            Text(manager.isRunning ? "监测中" : "报送平安")
+                            Text(manager.isRunning ? "守护中" : "报送平安")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             Spacer()
@@ -326,6 +326,7 @@ struct ContentView: View {
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
                 while !Task.isCancelled {
                     await fetchGreetings()
+                    await careStore.refreshCaredStatus()
                     // 前台 2s，后台 60s
                     let interval: UInt64 = scenePhase == .active ? 2_000_000_000 : 60_000_000_000
                     try? await Task.sleep(nanoseconds: interval)
@@ -482,16 +483,16 @@ struct CaredByCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Image(systemName: "heart.fill")
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(.pink)
                     Text(count > 0 ? "被 \(count) 位家人关心" : "等待被关心")
-                        .font(.subheadline)
+                        .font(.body)
                         .foregroundStyle(.primary)
                 }
 
                 if count > 0 {
                     Text("每一天，都有人在牵挂您")
-                        .font(.caption2)
+                        .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
                     Text("点击查看关心码，发给关心您的人")
@@ -506,10 +507,10 @@ struct CaredByCard: View {
             if count > 0 {
                 VStack(spacing: 2) {
                     Text("\(days)")
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
                         .foregroundStyle(.primary)
                     Text("天")
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
             } else {
@@ -624,9 +625,9 @@ struct CaringRow: View {
             ZStack {
                 Circle()
                     .fill(accentColor.opacity(0.25))
-                    .frame(width: 52, height: 52)
+                    .frame(width: 60, height: 60)
                 Text(String(relation.name.prefix(2)))
-                    .font(.title2)
+                    .font(.title)
                     .fontWeight(.bold)
                     .foregroundStyle(accentColor)
             }
@@ -635,11 +636,11 @@ struct CaringRow: View {
                 // 第 1 行：昵称 + 关心天数
                 HStack {
                     Text(relation.name)
-                        .font(.title2)
+                        .font(.title)
                         .fontWeight(.bold)
                     Spacer()
                     Text("\(relation.days) 天")
-                        .font(.headline)
+                        .font(.title2)
                         .fontWeight(.medium)
                         .foregroundStyle(.secondary)
                 }
@@ -650,7 +651,7 @@ struct CaringRow: View {
                         .fill(accentColor)
                         .frame(width: 12, height: 12)
                     Text(relation.activityText)
-                        .font(.headline)
+                        .font(.title3)
                         .fontWeight(.medium)
                         .foregroundStyle(.secondary)
                 }
@@ -665,7 +666,7 @@ struct CaringRow: View {
                         onGreeting(relation.bindCode)
                     } label: {
                         Text("🙏")
-                            .font(.title3)
+                            .font(.title2)
                     }
                     .buttonStyle(.plain)
                 }
@@ -675,8 +676,8 @@ struct CaringRow: View {
                     .font(.caption)
             }
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 16)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 18)
         .background(accentColor.opacity(isActive ? 0.18 : 0.14), in: RoundedRectangle(cornerRadius: 14))
         .shadow(color: .black.opacity(0.04), radius: 6, y: 2)
         .padding(.vertical, 2)
@@ -691,7 +692,7 @@ struct EmptyCaringPlaceholder: View {
             // 头像占位
             Circle()
                 .stroke(Color.gray.opacity(0.2), lineWidth: 1.5)
-                .frame(width: 52, height: 52)
+                .frame(width: 60, height: 60)
                 .overlay {
                     Image(systemName: "person.fill")
                         .font(.title3)
@@ -713,8 +714,8 @@ struct EmptyCaringPlaceholder: View {
                 .font(.caption)
                 .foregroundStyle(.gray.opacity(0.15))
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 16)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 18)
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.gray.opacity(0.12), style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
@@ -1457,57 +1458,161 @@ struct TimeWindowConfigSheet: View {
     @ObservedObject var manager: MonitorManager
     @Binding var editingWindowIndex: Int?
     @State private var showAddWindow = false
+    @State private var idleSliderValue: Double
 
     @Environment(\.dismiss) private var dismiss
 
+    init(manager: MonitorManager, editingWindowIndex: Binding<Int?>) {
+        self.manager = manager
+        self._editingWindowIndex = editingWindowIndex
+        _idleSliderValue = State(initialValue: Double(manager.idleAlertMinutes))
+    }
+
     var body: some View {
         NavigationStack {
-            List {
-                let windows = manager.monitoringWindows
-                ForEach(Array(windows.enumerated()), id: \.element.id) { idx, tw in
+            ScrollView {
+                VStack(spacing: 16) {
+                    // 说明
                     HStack {
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(accentForWindow(idx))
-                            .frame(width: 3, height: 28)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(tw.displayText)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            if !tw.label.isEmpty {
-                                Text(tw.label)
-                                    .font(.caption2)
-                                    .foregroundStyle(accentForWindow(idx).opacity(0.8))
-                            }
-                        }
+                        Image(systemName: "info.circle.fill")
+                            .foregroundStyle(.blue)
+                            .font(.subheadline)
+                        Text("仅在配置的时段内检测空闲告警，时段外不打扰")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                         Spacer()
+                    }
+                    .padding(.horizontal, 4)
+
+                    // ── 时段列表卡片 ──
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text("监测时段")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                        .padding(.bottom, 12)
+
+                        let windows = manager.monitoringWindows
+                        ForEach(Array(windows.enumerated()), id: \.element.id) { idx, tw in
+                            HStack(spacing: 12) {
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(accentForWindow(idx))
+                                    .frame(width: 4, height: 36)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(tw.displayText)
+                                        .font(.body)
+                                        .fontWeight(.semibold)
+                                    if !tw.label.isEmpty {
+                                        Text(tw.label)
+                                            .font(.caption)
+                                            .foregroundStyle(accentForWindow(idx).opacity(0.8))
+                                    }
+                                }
+                                Spacer()
+                                HStack(spacing: 12) {
+                                    Button {
+                                        editingWindowIndex = idx
+                                    } label: {
+                                        Image(systemName: "pencil.circle.fill")
+                                            .font(.title3)
+                                            .foregroundStyle(.blue)
+                                    }
+                                    .buttonStyle(.plain)
+                                    Button {
+                                        var list = manager.monitoringWindows
+                                        list.remove(at: idx)
+                                        manager.monitoringWindows = list
+                                    } label: {
+                                        Image(systemName: "minus.circle.fill")
+                                            .font(.title3)
+                                            .foregroundStyle(.red.opacity(0.6))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 14)
+                            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
+                            .padding(.horizontal, 16)
+                        }
+
+                        // 添加按钮
                         Button {
-                            editingWindowIndex = idx
+                            showAddWindow = true
                         } label: {
-                            Image(systemName: "pencil")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.body)
+                                Text("添加监测时段")
+                                    .font(.body)
+                                    .fontWeight(.medium)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
                         }
                         .buttonStyle(.plain)
+                        .padding(.horizontal, 32)
+                        .padding(.top, 8)
+                        .padding(.bottom, 20)
                     }
-                    .padding(.vertical, 2)
-                }
-                .onDelete { idxSet in
-                    var list = manager.monitoringWindows
-                    list.remove(atOffsets: idxSet)
-                    manager.monitoringWindows = list
-                }
+                    .background(Color(.systemGray6).opacity(0.5), in: RoundedRectangle(cornerRadius: 16))
 
-                Button {
-                    showAddWindow = true
-                } label: {
-                    Label("添加监测时段", systemImage: "plus")
+                    // ── 空闲告警阈值 ──
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text("空闲告警阈值")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                        .padding(.bottom, 4)
+
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("\(Int(idleSliderValue)) 分钟无活动则告警")
+                                .font(.body)
+                                .fontWeight(.semibold)
+
+                            Slider(value: $idleSliderValue, in: 5...120, step: 1) {
+                                Text("阈值")
+                            }
+                            .tint(.blue)
+                            .onChange(of: idleSliderValue) { _, newValue in
+                                manager.idleAlertMinutes = Int(newValue)
+                            }
+
+                            HStack {
+                                Text("5 分钟")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Text("120 分钟")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 16)
+                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 20)
+                    }
+                    .background(Color(.systemGray6).opacity(0.5), in: RoundedRectangle(cornerRadius: 16))
                 }
+                .padding(16)
             }
-            .navigationTitle("⏰ 监测时段")
+            .navigationTitle("守护时间段配置")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完成") { dismiss() }
+                        .fontWeight(.semibold)
                 }
             }
             .sheet(isPresented: $showAddWindow) {

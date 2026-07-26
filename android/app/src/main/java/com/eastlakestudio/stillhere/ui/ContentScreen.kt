@@ -83,11 +83,15 @@ fun ContentScreen(modifier: Modifier = Modifier) {
         composable("home") {
             HomeScreen(
                 modifier = modifier,
-                onConfigClick = { navController.navigate("config") }
+                onConfigClick = { navController.navigate("config") },
+                onTimeWindowClick = { navController.navigate("timeWindowConfig") }
             )
         }
         composable("config") {
             ConfigScreen(onBack = { navController.popBackStack() })
+        }
+        composable("timeWindowConfig") {
+            TimeWindowConfigSheet(onBack = { navController.popBackStack() })
         }
     }
 }
@@ -96,7 +100,8 @@ fun ContentScreen(modifier: Modifier = Modifier) {
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    onConfigClick: () -> Unit
+    onConfigClick: () -> Unit,
+    onTimeWindowClick: () -> Unit
 ) {
     val app = StillHereApp.instance
     val caring by app.careStore.caring.collectAsState()
@@ -130,6 +135,19 @@ fun HomeScreen(
     // 告警状态
     val pendingAlertMinutes by app.monitorManager.pendingAlertMinutes.collectAsState()
 
+    // 监测时段摘要
+    val timeWindowSummary = remember {
+        val windows = app.monitorManager.monitoringWindows
+        val totalMinutes = windows.sumOf { tw ->
+            if (tw.endMinutes > tw.startMinutes) tw.endMinutes - tw.startMinutes
+            else (24 * 60 - tw.startMinutes) + tw.endMinutes
+        }
+        val totalHours = totalMinutes / 60.0
+        val hoursText = if (totalHours >= 1.0) "%.0f 小时".format(totalHours)
+        else "${totalMinutes} 分钟"
+        "${windows.size} 个时段 · 共 $hoursText"
+    }
+
     // 相机权限请求
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -144,11 +162,11 @@ fun HomeScreen(
         app.careStore.refreshCaredStatus()
     }
 
-    // 前台期间每 3 秒刷新被关心人数
+    // 前台期间每 3 秒发送心跳（失败会显示在 UI 上）
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(30_000)
         while (true) {
-            Reporter.report()
+            app.monitorManager.sendHeartbeatNow()
             kotlinx.coroutines.delay(3_000)
         }
     }
@@ -189,6 +207,7 @@ fun HomeScreen(
                     NotificationManagerCompat.from(context).notify(2001, notification)
                 } catch (_: Exception) {}
             }
+            app.careStore.refreshCaredStatus()
             kotlinx.coroutines.delay(3_000)
         }
     }
@@ -229,7 +248,7 @@ fun HomeScreen(
                     Text("添加关心", style = MaterialTheme.typography.labelLarge)
                 }
 
-                // 报送平安 / 监测中
+                // 报送平安 / 守护中
                 val bgColor = if (isRunning)
                     MaterialTheme.colorScheme.primaryContainer
                 else
@@ -293,25 +312,61 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                if (isRunning) "监测中…" else "报送平安",
+                                if (isRunning) "守护中…" else "报送平安",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = fgColor
                             )
                             if (isRunning) {
                                 Text(
-                                    "持续监测活动状态并定时上报",
+                                    "持续守护活动状态并定时上报",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = fgColor.copy(alpha = 0.6f)
                                 )
                             } else {
                                 Text(
-                                    "点击开始监测",
+                                    "点击开始守护",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = fgColor.copy(alpha = 0.6f)
                                 )
                             }
                         }
+                    }
+                }
+
+                // 守护时间段配置
+                Card(
+                    onClick = onTimeWindowClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.large,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "守护时间段配置",
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            Text(
+                                timeWindowSummary,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Icon(
+                            Icons.Filled.ChevronRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
+                        )
                     }
                 }
 

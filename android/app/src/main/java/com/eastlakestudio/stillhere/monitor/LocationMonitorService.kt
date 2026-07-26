@@ -79,8 +79,8 @@ class LocationMonitorService : Service() {
             flags
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("安好 · 后台监测中")
-            .setContentText("正在持续监测设备状态")
+            .setContentTitle("安好 · 后台守护中")
+            .setContentText("正在持续守护设备状态")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
@@ -167,6 +167,11 @@ class LocationMonitorService : Service() {
             "offline" -> {
                 title = "安好 · 离线提醒"
                 body = "「${alert.caredName}」可能已离线"
+                icon = android.R.drawable.ic_dialog_alert
+            }
+            "stale" -> {
+                title = "安好 · 心跳异常"
+                body = "「${alert.caredName}」已 ${alert.idleMinutes} 分钟未上报状态"
                 icon = android.R.drawable.ic_dialog_alert
             }
             "online" -> {

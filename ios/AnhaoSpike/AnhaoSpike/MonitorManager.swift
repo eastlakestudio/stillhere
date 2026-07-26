@@ -181,6 +181,10 @@ final class MonitorManager: ObservableObject, Sendable {
         set { UserDefaults.standard.set(newValue, forKey: "anhao.spike.idleAlertMinutes") }
     }
 
+    /// 防止并发心跳
+    private var isSendingHeartbeat = false
+
+
     /// 周期心跳计时器
     private var heartbeatTimer: Timer?
 
@@ -285,16 +289,20 @@ final class MonitorManager: ObservableObject, Sendable {
     }
 
     private func sendHeartbeat() {
-        lastHeartbeatTime = Date()
+        guard !isSendingHeartbeat else { return }
+        isSendingHeartbeat = true
+
         Task {
             let result = await Reporter.shared.report(source: "Periodic", event: "heartbeat", appState: AppState.current(), isCharging: isCharging)
             let timeStr = Date().formatted(.dateTime.hour().minute().second())
             if result.ok {
+                lastHeartbeatTime = Date()
                 lastReportStatus = "✅ 心跳 \(timeStr)"
                 careStore?.caredByCount = result.caredByCount
             } else {
                 lastReportStatus = "❌ 心跳失败 \(timeStr)"
             }
+            isSendingHeartbeat = false
             print("[MonitorManager] heartbeat result: \(result.ok), caredBy: \(result.caredByCount)")
         }
     }
@@ -403,6 +411,12 @@ final class MonitorManager: ObservableObject, Sendable {
                 let ok = await Reporter.shared.cancelAlert()
                 print("[MonitorManager] cancelAlert result: \(ok)")
             }
+        }
+
+        // 后台检测到活动时，若距上次心跳超过 2 分钟，发送心跳更新服务端状态
+        let elapsed = Date().timeIntervalSince(lastHeartbeatTime)
+        if elapsed >= 120 {
+            sendHeartbeat()
         }
 
         // 日志标记为"已上报"（默认状态，实际心跳由周期任务负责）

@@ -32,3 +32,5 @@ client_secret_*.json
 # IDE
 .idea/
 .vscode/
+icon.png.bak
+*.bak

@@ -184,6 +184,9 @@ class MonitorManager(
             prefs.edit().putLong("anhao.spike.lastHeartbeat", value).apply()
         }
 
+    /** 防止并发心跳 */
+    private val isSendingHeartbeat = java.util.concurrent.atomic.AtomicBoolean(false)
+
     // ── 可配置监测时段 ──
 
     /** 监测活动时段列表，仅在时段内才触发空闲告警 */
@@ -355,15 +358,20 @@ class MonitorManager(
     }
 
     private suspend fun sendHeartbeat() {
-        val ok = Reporter.report(isCharging = isCharging)
-        lastHeartbeatTime = System.currentTimeMillis()
-        val timeStr = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-        if (ok) {
-            _lastReportStatus.value = "✅ 心跳 $timeStr"
-        } else {
-            _lastReportStatus.value = "❌ 心跳失败 $timeStr"
+        if (!isSendingHeartbeat.compareAndSet(false, true)) return
+        try {
+            val ok = Reporter.report(isCharging = isCharging)
+            lastHeartbeatTime = System.currentTimeMillis()
+            val timeStr = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+            if (ok) {
+                _lastReportStatus.value = "✅ 心跳 $timeStr"
+            } else {
+                _lastReportStatus.value = "❌ 心跳失败 $timeStr"
+            }
+            android.util.Log.d("MonitorManager", "heartbeat result: $ok")
+        } finally {
+            isSendingHeartbeat.set(false)
         }
-        android.util.Log.d("MonitorManager", "heartbeat result: $ok")
     }
 
     // MARK: - 前台切入
@@ -505,6 +513,12 @@ class MonitorManager(
             lastAlertTime = 0
             val ok = Reporter.cancelAlert()
             android.util.Log.d("MonitorManager", "cancelAlert result: $ok")
+        }
+
+        // 后台检测到活动时，若距上次心跳超过 2 分钟，发送心跳更新服务端状态
+        val elapsed = System.currentTimeMillis() - lastHeartbeatTime
+        if (elapsed >= 120_000L) {
+            sendHeartbeat()
         }
 
         logger.markReported(entry.id)
