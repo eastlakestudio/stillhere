@@ -18,6 +18,17 @@ Thumbs.db
 # Node (for any scripts)
 node_modules/
 
+# Android
+android/.gradle/
+android/local.properties
+android/app/build/
+*.apk
+*.aab
+
+# Secrets
+client_secret_*.json
+*.p8
+
 # IDE
 .idea/
 .vscode/
