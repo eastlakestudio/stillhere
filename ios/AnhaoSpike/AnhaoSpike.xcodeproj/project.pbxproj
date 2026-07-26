@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0525444A1AD8467CAC9EA156 /* CareStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D2C04D20E704C1EB68DD593 /* CareStore.swift */; };
 		0A5EA601C79D2CE2CB315C6C /* BackgroundRefreshMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC69E2D2BF7E28D82B16B814 /* BackgroundRefreshMonitor.swift */; };
 		42BFF24125B0993FE271FD26 /* MotionActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4162D99E6577FBA8C293FA9B /* MotionActivityMonitor.swift */; };
 		46D68AE6E3ADAA22957D82C4 /* LocationSLCMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3937EE8FC5DFC6FF4F14B139 /* LocationSLCMonitor.swift */; };
@@ -17,11 +16,11 @@
 		933AA421B28529FC8333CCFB /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1250EED3813E9E67D96DB09C /* Logger.swift */; };
 		A2F9485FBF516CE344BB93FB /* Reporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB967F9DB6382966FD6A6ED /* Reporter.swift */; };
 		B070098FD8F906A5BFFAECB2 /* MonitorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8375A39C8866D9E013B4FAC4 /* MonitorManager.swift */; };
+		F24913D9A16ADBCF92551C5A /* CareStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5FD2627D788729EEC84672 /* CareStore.swift */; };
 		FCDC050EB07FAA31A792FEA2 /* ChargingMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6896F4AB7256EE14D59C78 /* ChargingMonitor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0D2C04D20E704C1EB68DD593 /* CareStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareStore.swift; sourceTree = "<group>"; };
 		1250EED3813E9E67D96DB09C /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		2B073A1BCED945BD8600CDA9 /* AnhaoSpikeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnhaoSpikeApp.swift; sourceTree = "<group>"; };
 		315EF3572CB94FED66D4A093 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -31,6 +30,7 @@
 		8DB967F9DB6382966FD6A6ED /* Reporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reporter.swift; sourceTree = "<group>"; };
 		8E6896F4AB7256EE14D59C78 /* ChargingMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChargingMonitor.swift; sourceTree = "<group>"; };
 		96CFB13AE76CAD09B4F3CC2A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9E5FD2627D788729EEC84672 /* CareStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareStore.swift; sourceTree = "<group>"; };
 		AC69E2D2BF7E28D82B16B814 /* BackgroundRefreshMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshMonitor.swift; sourceTree = "<group>"; };
 		E738C4084ED4EAF4F3DA1EC8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		EDA33A5FA1A322D1B3000F1D /* AnhaoSpike.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AnhaoSpike.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -69,14 +69,14 @@
 			children = (
 				2B073A1BCED945BD8600CDA9 /* AnhaoSpikeApp.swift */,
 				96CFB13AE76CAD09B4F3CC2A /* Assets.xcassets */,
+				9E5FD2627D788729EEC84672 /* CareStore.swift */,
 				315EF3572CB94FED66D4A093 /* ContentView.swift */,
 				E738C4084ED4EAF4F3DA1EC8 /* Info.plist */,
 				1250EED3813E9E67D96DB09C /* Logger.swift */,
 				8375A39C8866D9E013B4FAC4 /* MonitorManager.swift */,
 				8DB967F9DB6382966FD6A6ED /* Reporter.swift */,
 				12E284127D66F1F0672A3416 /* Monitors */,
-			
-				0D2C04D20E704C1EB68DD593 /* CareStore.swift */,);
+			);
 			path = AnhaoSpike;
 			sourceTree = "<group>";
 		};
@@ -153,6 +153,7 @@
 			files = (
 				7F1FDCDF84E87285CC66C38B /* AnhaoSpikeApp.swift in Sources */,
 				0A5EA601C79D2CE2CB315C6C /* BackgroundRefreshMonitor.swift in Sources */,
+				F24913D9A16ADBCF92551C5A /* CareStore.swift in Sources */,
 				FCDC050EB07FAA31A792FEA2 /* ChargingMonitor.swift in Sources */,
 				4974B631685AC136862D895E /* ContentView.swift in Sources */,
 				46D68AE6E3ADAA22957D82C4 /* LocationSLCMonitor.swift in Sources */,
@@ -160,8 +161,7 @@
 				B070098FD8F906A5BFFAECB2 /* MonitorManager.swift in Sources */,
 				42BFF24125B0993FE271FD26 /* MotionActivityMonitor.swift in Sources */,
 				A2F9485FBF516CE344BB93FB /* Reporter.swift in Sources */,
-			
-				0525444A1AD8467CAC9EA156 /* CareStore.swift in Sources */,);
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */

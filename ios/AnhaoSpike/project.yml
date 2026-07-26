@@ -34,6 +34,7 @@ targets:
         NSLocationAlwaysUsageDescription: "独居安全监测需要始终定位权限，以在后台被杀后仍能唤醒 App 上报活动。"
         NSLocationWhenInUseUsageDescription: "独居安全监测需要定位权限以检测您的活动状态。"
         NSMotionUsageDescription: "独居安全监测需要运动权限以检测您的活动状态变化（走路/静止等）。"
+        NSCameraUsageDescription: "扫码添加家人时需要相机权限来扫描关心码。"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.eastlakestudio.stillhere
