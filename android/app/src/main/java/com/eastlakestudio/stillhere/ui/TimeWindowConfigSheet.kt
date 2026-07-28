@@ -55,6 +55,8 @@ fun TimeWindowConfigSheet(onBack: () -> Unit) {
     val windows = remember { mutableStateOf(app.monitorManager.monitoringWindows) }
     var editingIndex by remember { mutableStateOf<Int?>(null) }
     var showAddDialog by remember { mutableStateOf(false) }
+    val idleMin = app.monitorManager.idleAlertMinutes
+    var idleSlider by remember(idleMin) { mutableStateOf(idleMin.toFloat()) }
 
     // 编辑 / 新增弹窗
     if (editingIndex != null || showAddDialog) {
@@ -62,7 +64,7 @@ fun TimeWindowConfigSheet(onBack: () -> Unit) {
         val current = if (isEdit) windows.value.getOrNull(editingIndex!!) else TimeWindow(9, 0, 18, 0, "")
         TimeWindowEditDialog(
             initial = current,
-            title = if (isEdit) "编辑监测时段" else "添加监测时段",
+            title = if (isEdit) "编辑守护时段" else "添加守护时段",
             onDismiss = {
                 editingIndex = null
                 showAddDialog = false
@@ -134,7 +136,7 @@ fun TimeWindowConfigSheet(onBack: () -> Unit) {
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            "监测时段",
+                            "守护时段",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -208,13 +210,13 @@ fun TimeWindowConfigSheet(onBack: () -> Unit) {
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("添加监测时段", style = MaterialTheme.typography.bodyMedium)
+                            Text("添加守护时段", style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
             }
 
-            // ── 空闲告警阈值 ──
+            // ── 静置告警阈值 ──
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -225,15 +227,12 @@ fun TimeWindowConfigSheet(onBack: () -> Unit) {
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            "空闲告警阈值",
+                            "静置告警阈值",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
-
-                        val idleMin = app.monitorManager.idleAlertMinutes
-                        var idleSlider by remember(idleMin) { mutableStateOf(idleMin.toFloat()) }
 
                         Text(
                             "${idleSlider.roundToInt()} 分钟无活动则告警",
@@ -247,6 +246,7 @@ fun TimeWindowConfigSheet(onBack: () -> Unit) {
                                 app.monitorManager.idleAlertMinutes = idleSlider.roundToInt()
                             },
                             valueRange = 5f..120f,
+                            steps = 22,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

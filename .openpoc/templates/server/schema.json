@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "_comment": "由 AI 基于 specs/06_supplementary/ 和 Draft/UED Mock 数据填充。每个实体定义字段、Mock 规则、共享端。",
+  "entities": {}
+}

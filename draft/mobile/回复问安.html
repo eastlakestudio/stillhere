@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>回复问安 - 晴好</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { margin: 0; padding: 40px 0; background: #e8eaed; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .phone-frame { width: 390px; background: #1a1a1a; border: 3px solid #333; border-radius: 36px; padding: 10px 7px; }
+  .phone-status-bar { width: 375px; height: 24px; margin: 0 auto; background: #000; border-radius: 28px 28px 0 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: relative; }
+  .phone-status-bar .time { color: #fff; font-size: 12px; font-weight: 500; margin-left: 16px; }
+  .phone-status-bar .icons { color: #fff; font-size: 10px; display: flex; gap: 6px; align-items: center; }
+  .phone-status-bar::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 8px; height: 8px; background: #333; border-radius: 50%; border: 1px solid #555; }
+  .phone-screen { width: 375px; height: 780px; margin: 0 auto; background: #fff; border-radius: 0 0 28px 28px; overflow-y: auto; overflow-x: hidden; }
+  .phone-nav-bar { width: 375px; height: 8px; margin: 0 auto; background: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+  .phone-nav-bar::after { content: ''; width: 134px; height: 4px; background: rgba(255,255,255,0.25); border-radius: 2px; }
+  .nav-bar { height: 48px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; background: #fff; }
+  .nav-bar .back { padding: 0 8px 0 4px; font-size: 20px; color: #333; cursor: pointer; border: none; background: none; width: 40px; text-align: center; }
+  .nav-bar .title { font-size: 17px; font-weight: 600; color: #333; }
+  .greeting-card { margin: 16px; border: 1px solid #e0e0e0; padding: 16px; }
+  .greeting-card .from { font-size: 13px; color: #999; margin-bottom: 4px; }
+  .greeting-card .msg { font-size: 16px; color: #333; font-weight: 600; }
+  .greeting-card .time { font-size: 12px; color: #999; margin-top: 8px; }
+  .quick-replies { display: flex; gap: 8px; padding: 0 16px; margin-bottom: 16px; }
+  .quick-replies button { flex: 1; padding: 10px 0; background: #fff; border: 1px solid #333; color: #333; font-size: 14px; cursor: pointer; }
+  .custom-section { padding: 0 16px; }
+  .custom-section textarea { width: 100%; padding: 10px 12px; border: 1px solid #ccc; font-size: 14px; height: 60px; resize: none; font-family: inherit; margin-bottom: 8px; }
+  .custom-section button { display: block; width: 100%; padding: 10px 0; background: #fff; border: 1px solid #333; color: #333; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .back-to-index { display: block; text-align: center; padding: 20px 16px; font-size: 12px; color: #999; text-decoration: none; border-top: 1px solid #e0e0e0; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="phone-status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+  <div class="phone-screen">
+    <div class="nav-bar">
+      <button class="back" onclick="location.href='index.html'">←</button>
+      <span class="title">回复问安</span>
+    </div>
+
+    <div class="greeting-card">
+      <div class="from">来自 爸爸 (D4E5F6)</div>
+      <div class="msg">问安</div>
+      <div class="time">5 分钟前</div>
+    </div>
+
+    <div class="greeting-card">
+      <div class="from">来自 妈妈 (B5A218)</div>
+      <div class="msg">最近还好吗？</div>
+      <div class="time">1 小时前</div>
+    </div>
+
+    <div style="padding: 0 16px; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #333;">快捷回复</div>
+    <div class="quick-replies">
+      <button onclick="alert('已回复：晴好')">晴好</button>
+      <button onclick="alert('已回复：一切安好')">一切安好</button>
+      <button onclick="alert('已回复：收到')">收到</button>
+    </div>
+
+    <div style="padding: 0 16px; margin-bottom: 4px; font-size: 14px; font-weight: 600; color: #333;">自定义回复</div>
+    <div class="custom-section">
+      <textarea placeholder="输入回复内容..."></textarea>
+      <button onclick="alert('已回复')">发送回复</button>
+    </div>
+
+    <a class="back-to-index" href="index.html">← 返回场景地图</a>
+  </div>
+  <div class="phone-nav-bar"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>谁在关心我 - 晴好</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { margin: 0; padding: 40px 0; background: #e8eaed; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .phone-frame { width: 390px; background: #1a1a1a; border: 3px solid #333; border-radius: 36px; padding: 10px 7px; }
+  .phone-status-bar { width: 375px; height: 24px; margin: 0 auto; background: #000; border-radius: 28px 28px 0 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: relative; }
+  .phone-status-bar .time { color: #fff; font-size: 12px; font-weight: 500; margin-left: 16px; }
+  .phone-status-bar .icons { color: #fff; font-size: 10px; display: flex; gap: 6px; align-items: center; }
+  .phone-status-bar::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 8px; height: 8px; background: #333; border-radius: 50%; border: 1px solid #555; }
+  .phone-screen { width: 375px; height: 780px; margin: 0 auto; background: #fff; border-radius: 0 0 28px 28px; overflow-y: auto; overflow-x: hidden; }
+  .phone-nav-bar { width: 375px; height: 8px; margin: 0 auto; background: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+  .phone-nav-bar::after { content: ''; width: 134px; height: 4px; background: rgba(255,255,255,0.25); border-radius: 2px; }
+  .nav-bar { height: 48px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; background: #fff; }
+  .nav-bar .back { padding: 0 8px 0 4px; font-size: 20px; color: #333; cursor: pointer; border: none; background: none; width: 40px; text-align: center; }
+  .nav-bar .title { font-size: 17px; font-weight: 600; color: #333; }
+  .summary { padding: 12px 16px; font-size: 13px; color: #666; border-bottom: 1px solid #e0e0e0; }
+  .carer-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+  .carer-item .code { font-size: 15px; font-weight: 600; color: #333; font-family: monospace; letter-spacing: 2px; }
+  .carer-item .mutual { font-size: 11px; color: #333; border: 1px solid #333; padding: 2px 8px; }
+  .carer-item .arrow { font-size: 14px; color: #bbb; }
+  .carer-item .actions { display: flex; gap: 8px; align-items: center; }
+  .empty { padding: 60px 16px; text-align: center; font-size: 14px; color: #999; }
+  .back-to-index { display: block; text-align: center; padding: 20px 16px; font-size: 12px; color: #999; text-decoration: none; border-top: 1px solid #e0e0e0; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="phone-status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+  <div class="phone-screen">
+    <div class="nav-bar">
+      <button class="back" onclick="location.href='index.html'">←</button>
+      <span class="title">谁在关心我</span>
+    </div>
+
+    <div class="summary">共 2 人在关心你</div>
+
+    <div class="carer-item">
+      <span class="code">B5A218</span>
+      <div class="actions">
+        <span class="mutual">互关</span>
+        <span class="arrow">›</span>
+      </div>
+    </div>
+
+    <div class="carer-item">
+      <span class="code">D4E5F6</span>
+      <span class="arrow">›</span>
+    </div>
+
+    <div style="padding: 16px">
+      <p style="font-size:13px;color:#666">提示：对方已添加你为关心对象。你可以将对方的关心码添加到你的关心列表中，建立互相关心。</p>
+    </div>
+
+    <a class="back-to-index" href="index.html">← 返回场景地图</a>
+  </div>
+  <div class="phone-nav-bar"></div>
+</div>
+</body>
+</html>

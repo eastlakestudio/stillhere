@@ -94,6 +94,29 @@ class CareStore(context: Context) {
 
     init {
         load()
+        syncFromServer()
+    }
+
+    // MARK: - 从服务端恢复
+
+    /** 新装 App 或清理数据后，从服务端拉回关心关系 */
+    private fun syncFromServer() {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val remote = Reporter.fetchCaring()
+                if (remote.isEmpty()) return@launch
+                val existingCodes = _caring.value.map { it.bindCode }.toSet()
+                val newOnes = remote.filter { it.bindCode !in existingCodes }
+                if (newOnes.isEmpty()) return@launch
+                _caring.value = _caring.value + newOnes.map {
+                    CareRelation(name = it.bindCode, bindCode = it.bindCode)
+                }
+                save()
+                android.util.Log.d("CareStore", "synced ${newOnes.size} relations from server")
+            } catch (e: Exception) {
+                android.util.Log.e("CareStore", "syncFromServer failed: ${e.message}")
+            }
+        }
     }
 
     // MARK: - 我关心

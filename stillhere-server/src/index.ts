@@ -2,6 +2,7 @@ import { handleHeartbeat } from './routes/heartbeat';
 import { handleCare } from './routes/care';
 import { handleCaredStatus } from './routes/cared-status';
 import { handleCaredByMe } from './routes/cared-by-me';
+import { handleCaring } from './routes/caring';
 import { handleGreeting } from './routes/greeting';
 import { handleDashboard } from './routes/dashboard';
 import { handleAlert } from './routes/alert';
@@ -46,6 +47,8 @@ export default {
           return await handlePendingAlerts(request, env);
         case '/cared-by-me':
           return await handleCaredByMe(request, env);
+        case '/caring':
+          return await handleCaring(request, env);
         case '/greeting':
         case '/greeting/reply':
         case '/pending-greetings':

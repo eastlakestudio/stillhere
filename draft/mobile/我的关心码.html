@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的关心码 - 晴好 StillHere</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0;
+    background: #e8eaed;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  .phone-frame {
+    width: 390px;
+    background: #1a1a1a;
+    border: 3px solid #333;
+    border-radius: 36px;
+    padding: 10px 7px;
+  }
+  .phone-status-bar {
+    width: 375px; height: 24px;
+    margin: 0 auto;
+    background: #000;
+    border-radius: 28px 28px 0 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; position: relative;
+  }
+  .phone-status-bar .time { color: #fff; font-size: 12px; font-weight: 500; margin-left: 16px; }
+  .phone-status-bar .icons { color: #fff; font-size: 10px; display: flex; gap: 6px; align-items: center; }
+  .phone-status-bar::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 8px; height: 8px; background: #333; border-radius: 50%; border: 1px solid #555;
+  }
+  .phone-screen {
+    width: 375px; height: 780px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 0 0 28px 28px;
+    overflow-y: auto; overflow-x: hidden;
+  }
+  .phone-nav-bar {
+    width: 375px; height: 8px; margin: 0 auto;
+    background: #1a1a1a;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .phone-nav-bar::after {
+    content: ''; width: 134px; height: 4px;
+    background: rgba(255,255,255,0.25); border-radius: 2px;
+  }
+
+  /* Draft 规范：白色背景 + 1px 实线 + #333 加粗标题 */
+  .nav-bar {
+    height: 48px; border-bottom: 1px solid #e0e0e0;
+    display: flex; align-items: center;
+    background: #fff;
+  }
+  .nav-bar .back {
+    padding: 0 8px 0 4px; font-size: 20px; color: #333; cursor: pointer;
+    border: none; background: none; width: 40px; text-align: center;
+  }
+  .nav-bar .title { font-size: 17px; font-weight: 600; color: #333; }
+
+  .content { padding: 0 16px; }
+
+  /* 二维码占位 */
+  .qr-placeholder {
+    width: 200px; height: 200px;
+    margin: 40px auto 20px;
+    border: 2px dashed #ccc;
+    display: flex; align-items: center; justify-content: center;
+    color: #999; font-size: 14px;
+  }
+
+  .carecode-display {
+    text-align: center;
+    font-size: 28px; font-weight: 700; color: #333;
+    letter-spacing: 6px; font-family: 'Courier New', monospace;
+    margin-bottom: 24px;
+  }
+
+  .btn-share {
+    display: block; width: 100%;
+    padding: 12px 0;
+    background: #fff; border: 1px solid #333;
+    color: #333; font-size: 16px; font-weight: 600;
+    cursor: pointer; text-align: center;
+    margin-bottom: 24px;
+  }
+  .btn-share:hover { background: #f5f5f5; }
+
+  .divider { border-top: 1px solid #e0e0e0; margin: 0 -16px; }
+
+  .hint {
+    padding: 16px;
+    font-size: 13px; color: #666;
+    line-height: 1.6;
+  }
+
+  .info-card {
+    margin: 12px 16px;
+    border: 1px solid #e0e0e0;
+    padding: 12px 16px;
+  }
+  .info-card .label { font-size: 12px; color: #999; }
+  .info-card .value { font-size: 15px; color: #333; margin-top: 2px; font-weight: 600; }
+  .info-card .row { display: flex; gap: 24px; }
+
+  /* 返回索引 */
+  .back-to-index {
+    display: block; text-align: center; padding: 20px 16px;
+    font-size: 12px; color: #999; cursor: pointer; text-decoration: none;
+    border-top: 1px solid #e0e0e0; margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-status-bar">
+    <span class="time">9:41</span>
+    <span class="icons">📶 🔋</span>
+  </div>
+  <div class="phone-screen">
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+      <button class="back" onclick="location.href='index.html'">←</button>
+      <span class="title">我的关心码</span>
+    </div>
+
+    <div class="content">
+      <!-- 二维码 -->
+      <div class="qr-placeholder">QR Code<br>200×200</div>
+
+      <!-- 关心码 -->
+      <div class="carecode-display">A1B2C3</div>
+
+      <!-- 分享按钮 -->
+      <button class="btn-share" onclick="alert('分享关心码')">分享关心码</button>
+    </div>
+
+    <!-- 提示 -->
+    <div class="divider"></div>
+    <div class="hint">
+      提示：将此页面展示给对方，对方扫码或输入以上 6 位码即可添加你为关心对象。
+    </div>
+    <div class="divider"></div>
+
+    <!-- 信息卡片 -->
+    <div class="info-card">
+      <div class="row">
+        <div>
+          <div class="label">绑定时间</div>
+          <div class="value">2026-07-20</div>
+        </div>
+        <div>
+          <div class="label">关心我的人</div>
+          <div class="value">3 人</div>
+        </div>
+      </div>
+    </div>
+
+    <a class="back-to-index" href="index.html">← 返回场景地图</a>
+
+  </div>
+  <div class="phone-nav-bar"></div>
+</div>
+
+</body>
+</html>

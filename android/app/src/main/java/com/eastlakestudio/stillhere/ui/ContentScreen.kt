@@ -1,8 +1,6 @@
 package com.eastlakestudio.stillhere.ui
 
 import android.Manifest
-import android.app.PendingIntent
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -59,13 +57,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.eastlakestudio.stillhere.MainActivity
 import com.eastlakestudio.stillhere.StillHereApp
 import com.eastlakestudio.stillhere.data.CareRelation
 import com.eastlakestudio.stillhere.data.CarerInfo
@@ -180,32 +175,23 @@ fun HomeScreen(
     }
 
     // 轮询问安消息（3 秒轮询）
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(5000)
         while (true) {
             val gs = Reporter.fetchPendingGreetings(shortBindCode)
             if (gs.isNotEmpty() && !showGreetingReply) {
-                pendingGreetings = gs
-                showGreetingReply = true
-                // 发送系统通知
-                try {
-                    val intent = Intent(context, MainActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    }
-                    val pendingIntent = PendingIntent.getActivity(
-                        context, 0, intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-                    val notification = NotificationCompat.Builder(context, StillHereApp.GREETING_CHANNEL_ID)
-                        .setSmallIcon(android.R.drawable.ic_dialog_info)
-                        .setContentTitle("问安消息")
-                        .setContentText(if (gs.size == 1) "收到一条新的问安" else "收到 ${gs.size} 条新的问安")
-                        .setContentIntent(pendingIntent)
-                        .setAutoCancel(true)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .build()
-                    NotificationManagerCompat.from(context).notify(2001, notification)
-                } catch (_: Exception) {}
+                // 仅在 App 前台时弹 BottomSheet，后台留给 BackgroundWorker 发系统通知
+                if (lifecycleOwner.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+                    pendingGreetings = gs
+                    showGreetingReply = true
+                }
+                // 标记为已展示，防止后台任务重复推送通知
+                val prefs = context.getSharedPreferences("anhao.spike", android.content.Context.MODE_PRIVATE)
+                val seenIds = prefs.getString("anhao.spike.notifiedGreetingIds", "")?.split(",")
+                    ?.mapNotNull { it.toLongOrNull() }?.toSet() ?: emptySet()
+                val allIds = (seenIds + gs.map { it.id }).toSortedSet()
+                prefs.edit().putString("anhao.spike.notifiedGreetingIds", allIds.joinToString(",")).apply()
             }
             app.careStore.refreshCaredStatus()
             kotlinx.coroutines.delay(3_000)
@@ -216,14 +202,21 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        "安好",
-                        fontWeight = FontWeight.SemiBold,
-                        style = MaterialTheme.typography.headlineSmall
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "晴好",
+                            fontWeight = FontWeight.Light,
+                            fontSize = 22.sp,
+                            letterSpacing = 2.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )

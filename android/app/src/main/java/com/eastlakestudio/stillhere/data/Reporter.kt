@@ -9,10 +9,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import okhttp3.Dns
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.net.InetAddress
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import java.security.MessageDigest
@@ -32,6 +34,7 @@ object Reporter {
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS)
+        .dns(DohDns)
         .build()
 
     private lateinit var prefs: SharedPreferences
@@ -284,6 +287,30 @@ object Reporter {
         }
     }
 
+    /** 查询我关心的人（用于新装 App 恢复关心关系） */
+    suspend fun fetchCaring(): List<CaringRelation> = withContext(Dispatchers.IO) {
+        try {
+            val request = Request.Builder()
+                .url("$baseURL/caring?deviceId=$deviceId")
+                .get()
+                .build()
+
+            val response = client.newCall(request).execute()
+            response.use { resp ->
+                if (!resp.isSuccessful) return@withContext emptyList()
+                val json = gson.fromJson(resp.body?.string(), Map::class.java)
+                val caring = json["caring"] as? List<*> ?: return@withContext emptyList()
+                caring.mapNotNull { c ->
+                    val m = c as? Map<*, *> ?: return@mapNotNull null
+                    CaringRelation(bindCode = m["bindCode"] as? String ?: "")
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("Reporter", "fetchCaring failed: ${e.message}")
+            emptyList()
+        }
+    }
+
     // MARK: - 问安
 
     /** 发送问安，返回问安记录 ID */
@@ -427,3 +454,42 @@ data class PendingGreeting(
     val createdAt: Long,     // Unix 秒
     val isReply: Boolean = false  // true = 答复消息, false = 主动问安
 )
+
+/** 服务端返回的关心关系（用于恢复） */
+data class CaringRelation(
+    val bindCode: String
+)
+
+// DNS-over-HTTPS: 绕过厂商 DNS 代理，用 Cloudflare 1.1.1.1 做域名解析
+private object DohDns : Dns {
+    private const val DOH_URL = "https://1.1.1.1/dns-query"
+    private val dohClient = OkHttpClient.Builder()
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(5, TimeUnit.SECONDS)
+        .dns(object : Dns {
+            override fun lookup(hostname: String) =
+                listOf(InetAddress.getByAddress("1.1.1.1", byteArrayOf(1, 1, 1, 1)))
+        })
+        .build()
+
+    override fun lookup(hostname: String): List<InetAddress> {
+        return try {
+            val url = "$DOH_URL?name=$hostname&type=A"
+            val request = Request.Builder()
+                .url(url)
+                .header("Accept", "application/dns-json")
+                .build()
+            val response = dohClient.newCall(request).execute()
+            val body = response.body?.string() ?: return Dns.SYSTEM.lookup(hostname)
+            response.close()
+            val json = Gson().fromJson(body, Map::class.java)
+            val answers = json["Answer"] as? List<*> ?: return Dns.SYSTEM.lookup(hostname)
+            answers.mapNotNull { a ->
+                val m = a as? Map<*, *>
+                (m?.get("data") as? String)?.let { InetAddress.getByName(it) }
+            }.ifEmpty { Dns.SYSTEM.lookup(hostname) }
+        } catch (_: Exception) {
+            Dns.SYSTEM.lookup(hostname)
+        }
+    }
+}

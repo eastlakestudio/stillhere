@@ -37,8 +37,18 @@ class StillHereApp : Application() {
             description = "收到关心人的问安消息"
             enableVibration(true)
         }
+        // 告警通知渠道
+        val alertChannel = NotificationChannel(
+            ALERT_CHANNEL_ID,
+            "活动告警",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "被关心者的异常活动告警"
+            enableVibration(true)
+        }
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(greetingChannel)
+        nm.createNotificationChannel(alertChannel)
     }
 
     companion object {
@@ -46,5 +56,6 @@ class StillHereApp : Application() {
             private set
 
         const val GREETING_CHANNEL_ID = "greeting_channel"
+        const val ALERT_CHANNEL_ID = "stillhere_alert"
     }
 }

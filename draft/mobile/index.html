@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>晴好 StillHere — 移动端线框</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0;
+    background: #e8eaed;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  .phone-frame {
+    width: 390px;
+    background: #1a1a1a;
+    border: 3px solid #333;
+    border-radius: 36px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    padding: 10px 7px;
+  }
+  .phone-status-bar {
+    width: 375px; height: 24px;
+    margin: 0 auto;
+    background: #000;
+    border-radius: 28px 28px 0 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; position: relative;
+  }
+  .phone-status-bar .time { color: #fff; font-size: 12px; font-weight: 500; margin-left: 16px; }
+  .phone-status-bar .icons { color: #fff; font-size: 10px; display: flex; gap: 6px; align-items: center; }
+  .phone-status-bar::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 8px; height: 8px; background: #333; border-radius: 50%; border: 1px solid #555;
+  }
+  .phone-screen {
+    width: 375px; height: 780px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 0 0 28px 28px;
+    overflow-y: auto; overflow-x: hidden;
+  }
+  .phone-nav-bar {
+    width: 375px; height: 8px; margin: 0 auto;
+    background: #1a1a1a;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .phone-nav-bar::after {
+    content: ''; width: 134px; height: 4px;
+    background: rgba(255,255,255,0.25); border-radius: 2px;
+  }
+  .nav-bar {
+    height: 48px; border-bottom: 1px solid #e0e0e0;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff; position: sticky; top: 0; z-index: 1;
+  }
+  .nav-bar .title { font-size: 17px; font-weight: 600; color: #333; }
+  .section { padding: 16px; }
+  .section-header {
+    font-size: 13px; font-weight: 600; color: #666;
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 12px 16px 8px; border-bottom: 1px solid #e0e0e0;
+  }
+  .scene-list { list-style: none; }
+  .scene-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid #f0f0f0;
+    cursor: pointer; background: #fff;
+    transition: background 0.15s;
+  }
+  .scene-item:hover { background: #fafafa; }
+  .scene-item .label { font-size: 15px; color: #333; }
+  .scene-item .arrow { font-size: 14px; color: #bbb; }
+  .scene-item .badge {
+    font-size: 11px; color: #666; background: #f5f5f5;
+    border: 1px solid #e0e0e0; padding: 2px 8px; margin-right: 8px;
+  }
+  .footer {
+    padding: 24px 16px; text-align: center;
+    font-size: 12px; color: #999; border-top: 1px solid #e0e0e0;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-status-bar">
+    <span class="time">9:41</span>
+    <span class="icons">📶 🔋</span>
+  </div>
+  <div class="phone-screen">
+    <div class="nav-bar">
+      <span class="title">晴好 StillHere</span>
+    </div>
+
+    <!-- 核心场景 -->
+    <div class="section-header">核心场景</div>
+    <ul class="scene-list">
+      <li class="scene-item" onclick="location.href='主页面.html'">
+        <span class="label">🏠 主页面</span>
+        <span class="arrow">›</span>
+      </li>
+      <li class="scene-item" onclick="location.href='我的关心码.html'">
+        <span class="label">📱 我的关心码</span>
+        <span class="badge">QR</span>
+        <span class="arrow">›</span>
+      </li>
+      <li class="scene-item" onclick="location.href='添加关心.html'">
+        <span class="label">➕ 添加关心</span>
+        <span class="badge">扫码</span>
+        <span class="arrow">›</span>
+      </li>
+      <li class="scene-item" onclick="location.href='关心对象详情.html'">
+        <span class="label">👤 关心对象详情</span>
+        <span class="arrow">›</span>
+      </li>
+    </ul>
+
+    <!-- 告警与问安 -->
+    <div class="section-header">告警与问安</div>
+    <ul class="scene-list">
+      <li class="scene-item" onclick="location.href='告警横幅.html'">
+        <span class="label">🚨 告警横幅 & 倒计时</span>
+        <span class="arrow">›</span>
+      </li>
+      <li class="scene-item" onclick="location.href='收到告警通知.html'">
+        <span class="label">🔔 收到告警通知</span>
+        <span class="arrow">›</span>
+      </li>
+      <li class="scene-item" onclick="location.href='发送问安.html'">
+        <span class="label">💬 发送问安</span>
+        <span class="arrow">›</span>
+      </li>
+      <li class="scene-item" onclick="location.href='回复问安.html'">
+        <span class="label">✉️ 回复问安</span>
+        <span class="arrow">›</span>
+      </li>
+    </ul>
+
+    <!-- 配置 -->
+    <div class="section-header">设置与配置</div>
+    <ul class="scene-list">
+      <li class="scene-item" onclick="location.href='守护时段配置.html'">
+        <span class="label">⏰ 守护时段配置</span>
+        <span class="arrow">›</span>
+      </li>
+      <li class="scene-item" onclick="location.href='系统设置.html'">
+        <span class="label">⚙️ 系统设置</span>
+        <span class="arrow">›</span>
+      </li>
+    </ul>
+
+    <!-- 被关心视角 -->
+    <div class="section-header">被关心视角</div>
+    <ul class="scene-list">
+      <li class="scene-item" onclick="location.href='谁在关心我.html'">
+        <span class="label">👥 谁在关心我</span>
+        <span class="arrow">›</span>
+      </li>
+      <li class="scene-item" onclick="location.href='来自关心人的问安.html'">
+        <span class="label">💌 来自关心人的问安</span>
+        <span class="arrow">›</span>
+      </li>
+    </ul>
+
+    <div class="footer">
+      晴好 StillHere · V0.1.0<br>
+      Draft 线框阶段 · 移动端
+    </div>
+  </div>
+  <div class="phone-nav-bar"></div>
+</div>
+
+</body>
+</html>

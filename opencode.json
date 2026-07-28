@@ -1,0 +1,39 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    ".opencode/skills/*/SKILL.md",
+    "OPENPOC_STATUS.md"
+  ],
+  "references": {
+    "specs": {
+      "path": "specs",
+      "description": "原始需求、规范、架构约束、UI 规范、会议纪要等输入材料"
+    },
+    "artifacts": {
+      "path": "artifacts",
+      "description": "各循环产出的审查报告和 PRD/UED 设计文档"
+    },
+    "draft": {
+      "path": "draft",
+      "description": "循环 2 Draft 线框 HTML 产物"
+    },
+    "prototype": {
+      "path": "prototype",
+      "description": "循环 3 高保真原型 HTML 产物 + 后端服务"
+    }
+  },
+  "command": {
+    "openpoc-prd": {
+      "description": "【循环 1】PRD 阶段 — 审查 specs/ 材料并生成 PRD",
+      "template": "openpoc prd"
+    },
+    "openpoc-draft": {
+      "description": "【循环 2】Draft 线框图 — 基于 PRD 逐场景生成线框 HTML",
+      "template": "openpoc draft"
+    },
+    "openpoc-ued": {
+      "description": "【循环 3】高保真 UED — 升级为真实组件的高保真原型",
+      "template": "openpoc ued"
+    }
+  }
+}

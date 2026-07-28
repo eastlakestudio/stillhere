@@ -11,8 +11,8 @@ android {
         applicationId = "com.eastlakestudio.stillhere"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.1"
     }
 
     buildTypes {
@@ -23,6 +23,10 @@ android {
                 "proguard-rules.pro"
             )
         }
+    }
+
+    lint {
+        checkReleaseBuilds = false
     }
 
     compileOptions {

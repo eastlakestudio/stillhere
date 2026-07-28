@@ -38,7 +38,7 @@ import java.util.Locale
 
 /**
  * 问安回复底部弹窗
- * 显示收到的问安消息，支持快捷"安好"回复或自定义文本
+ * 显示收到的问安消息，支持快捷"晴好"回复或自定义文本
  * 同一发送人只保留最后一条问安；若发送人是关心人则有昵称
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,17 +118,17 @@ fun GreetingReplySheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 快捷回复：安好
+            // 快捷回复：晴好
             OutlinedButton(
                 onClick = {
-                    deduped.forEach { g -> onReply(g.id, "安好") }
+                    deduped.forEach { g -> onReply(g.id, "晴好") }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium
             ) {
                 Icon(Icons.Filled.Favorite, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("安好", style = MaterialTheme.typography.labelLarge)
+                Text("晴好", style = MaterialTheme.typography.labelLarge)
             }
 
             Spacer(modifier = Modifier.height(12.dp))

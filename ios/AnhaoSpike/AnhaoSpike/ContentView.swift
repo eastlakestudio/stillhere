@@ -308,7 +308,7 @@ struct ContentView: View {
                 .padding(.bottom, 8)
                 .background(Color(.systemBackground))
             }
-            .navigationTitle("安好")
+            .navigationTitle("晴好")
             .task {
                 deviceId = await Reporter.shared.deviceId
                 manager.startAll()

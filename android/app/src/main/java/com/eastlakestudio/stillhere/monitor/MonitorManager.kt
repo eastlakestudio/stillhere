@@ -345,6 +345,8 @@ class MonitorManager(
                 if (elapsed >= HEARTBEAT_INTERVAL_MS) {
                     sendHeartbeat()
                 }
+                // 后台周期性检查本地告警（确保后台也能触发系统通知）
+                checkLocalAlert()
                 delay(60_000L) // 每分钟检查一次
             }
         }
@@ -387,6 +389,36 @@ class MonitorManager(
     // MARK: - 本地告警（基于监测时段）
 
     /**
+     * 获取有效的最后活动时间（仅计算监测时段内的空闲）
+     *
+     * 如果 lastActivityTime 早于当前监测窗口的起始时间，则使用窗口起始时间，
+     * 避免将非守护时段（如睡眠）的空闲计入告警。
+     */
+    private fun getEffectiveLastActivityTime(now: Long): Long {
+        val nowCal = Calendar.getInstance().apply { timeInMillis = now }
+        val nowMinutes = nowCal.get(Calendar.HOUR_OF_DAY) * 60 + nowCal.get(Calendar.MINUTE)
+
+        val currentWindow = monitoringWindows.firstOrNull { it.contains(nowMinutes) }
+            ?: return lastActivityTime
+
+        // 计算最近一次该窗口的起始时间
+        val windowStartCal = Calendar.getInstance().apply {
+            timeInMillis = now
+            set(Calendar.HOUR_OF_DAY, currentWindow.startHour)
+            set(Calendar.MINUTE, currentWindow.startMinute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        // 如果是跨日窗口（如 22:00–06:00），且当前在凌晨段，窗口起始应调整为昨天
+        if (windowStartCal.timeInMillis > now) {
+            windowStartCal.add(Calendar.DAY_OF_YEAR, -1)
+        }
+
+        return maxOf(lastActivityTime, windowStartCal.timeInMillis)
+    }
+
+    /**
      * 检查是否需要生成本地告警
      *
      * 逻辑：当前时间在任一监测时段内，且空闲超过阈值 → 本机通知 + 5分钟延迟后上报
@@ -398,17 +430,20 @@ class MonitorManager(
         // 充电时忽略告警（用户在家充电，属于正常状态）
         if (ignoreChargingForAlert && isCharging) return
 
-        // 空闲超过阈值
-        val idleSeconds = (System.currentTimeMillis() - lastActivityTime) / 1000
+        val now = System.currentTimeMillis()
+
+        // 仅计算当前监测时段内的空闲时长（非守护时段不计入）
+        val effectiveLastActivity = getEffectiveLastActivityTime(now)
+        val idleSeconds = (now - effectiveLastActivity) / 1000
         if (idleSeconds <= idleAlertMinutes * 60L) return
 
         // 如果已有待确认告警 → 跳过
         if (_pendingAlertMinutes.value != null) return
 
         // 避免同一时段重复告警（5 分钟内不重复）
-        if (lastAlertTime > 0 && (System.currentTimeMillis() - lastAlertTime) < 5 * 60 * 1000) return
+        if (lastAlertTime > 0 && (now - lastAlertTime) < 5 * 60 * 1000) return
 
-        lastAlertTime = System.currentTimeMillis()
+        lastAlertTime = now
         isAlerted = true
         val idleMinutes = (idleSeconds / 60).toInt()
         val event = "⚠️ 告警：已 ${idleMinutes} 分钟无活动"
@@ -441,7 +476,7 @@ class MonitorManager(
             )
             val notification = NotificationCompat.Builder(context, StillHereApp.GREETING_CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                .setContentTitle("安好 · 活动超时提醒")
+                .setContentTitle("晴好 · 活动超时提醒")
                 .setContentText("已 ${idleMinutes} 分钟无活动，5分钟内未取消将通知关心人")
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
@@ -499,20 +534,35 @@ class MonitorManager(
     /**
      * 唤醒处理：记录活动时间 + 日志。
      * 不再每次事件都上报心跳，改为周期上报。
+     * BGAppRefresh（后台定时任务）不算用户活动，不刷新 lastActivityTime，
+     * 避免空闲计时器被周期性后台任务不断重置。
      */
     private suspend fun handleWakeInternal(source: String, event: String) {
-        lastActivityTime = System.currentTimeMillis()
+        // 非后台定时任务、非告警事件才视为用户活动，更新空闲计时起点
+        // BGAppRefresh：后台定时任务，不是用户真实活动
+        // Alert：告警触发事件，不应重置空闲计时器也不应自我取消
+        if (source != "BGAppRefresh" && source != "Alert") {
+            lastActivityTime = System.currentTimeMillis()
+        }
         val appState = "foreground"
 
         val entry = logger.record(source = source, event = event, appState = appState)
         android.util.Log.d("MonitorManager", "wake source=$source event=$event")
 
-        // 如果之前处于告警状态 → 活动恢复，取消告警
-        if (isAlerted) {
+        // 如果之前处于告警状态 → 活动恢复，取消告警（包括本地定时器和通知）
+        // 但不包括 Alert 自身触发的事件（避免告警刚触发就被自己取消）
+        if (isAlerted && source != "Alert") {
             isAlerted = false
             lastAlertTime = 0
+            // 取消本地 5 分钟倒计时，避免活动恢复后仍然上报
+            _pendingAlertMinutes.value = null
+            alertTimerJob?.cancel()
+            alertTimerJob = null
             val ok = Reporter.cancelAlert()
             android.util.Log.d("MonitorManager", "cancelAlert result: $ok")
+            // 移除通知
+            val nm = context.getSystemService(android.app.NotificationManager::class.java)
+            nm.cancel(3001)
         }
 
         // 后台检测到活动时，若距上次心跳超过 2 分钟，发送心跳更新服务端状态

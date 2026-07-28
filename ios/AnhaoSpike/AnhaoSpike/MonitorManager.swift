@@ -339,7 +339,7 @@ final class MonitorManager: ObservableObject, Sendable {
 
         // 显示本地通知
         let content = UNMutableNotificationContent()
-        content.title = "安好 · 活动超时提醒"
+        content.title = "晴好 · 活动超时提醒"
         content.body = "已 \(idleMinutes) 分钟无活动，5分钟内未取消将通知关心人"
         content.sound = .default
         let req = UNNotificationRequest(identifier: "alert-\(Date().timeIntervalSince1970)", content: content, trigger: nil)

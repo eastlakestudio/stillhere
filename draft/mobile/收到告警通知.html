@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>收到告警通知 - 晴好</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { margin: 0; padding: 40px 0; background: #e8eaed; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .phone-frame { width: 390px; background: #1a1a1a; border: 3px solid #333; border-radius: 36px; padding: 10px 7px; }
+  .phone-status-bar { width: 375px; height: 24px; margin: 0 auto; background: #000; border-radius: 28px 28px 0 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: relative; }
+  .phone-status-bar .time { color: #fff; font-size: 12px; font-weight: 500; margin-left: 16px; }
+  .phone-status-bar .icons { color: #fff; font-size: 10px; display: flex; gap: 6px; align-items: center; }
+  .phone-status-bar::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 8px; height: 8px; background: #333; border-radius: 50%; border: 1px solid #555; }
+  .phone-screen { width: 375px; height: 780px; margin: 0 auto; background: #fff; border-radius: 0 0 28px 28px; overflow-y: auto; overflow-x: hidden; }
+  .phone-nav-bar { width: 375px; height: 8px; margin: 0 auto; background: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+  .phone-nav-bar::after { content: ''; width: 134px; height: 4px; background: rgba(255,255,255,0.25); border-radius: 2px; }
+  .nav-bar { height: 48px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; background: #fff; }
+  .nav-bar .back { padding: 0 8px 0 4px; font-size: 20px; color: #333; cursor: pointer; border: none; background: none; width: 40px; text-align: center; }
+  .nav-bar .title { font-size: 17px; font-weight: 600; color: #333; }
+  .alert-card { margin: 12px 16px; border: 1px solid #e74c3c; padding: 14px 16px; }
+  .alert-card .head { font-size: 15px; font-weight: 600; color: #e74c3c; margin-bottom: 4px; }
+  .alert-card .info { font-size: 13px; color: #666; line-height: 1.6; }
+  .alert-card .time { font-size: 12px; color: #999; margin-top: 8px; }
+  .normal-card { margin: 12px 16px; border: 1px solid #52c41a; padding: 14px 16px; }
+  .normal-card .head { font-size: 15px; font-weight: 600; color: #52c41a; margin-bottom: 4px; }
+  .back-to-index { display: block; text-align: center; padding: 20px 16px; font-size: 12px; color: #999; text-decoration: none; border-top: 1px solid #e0e0e0; margin-top: 16px; }
+  .btn { display: block; width: calc(100% - 32px); margin: 0 16px; padding: 10px 0; background: #fff; border: 1px solid #333; color: #333; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="phone-status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+  <div class="phone-screen">
+    <div class="nav-bar">
+      <button class="back" onclick="location.href='index.html'">←</button>
+      <span class="title">告警通知</span>
+    </div>
+
+    <div class="alert-card">
+      <div class="head">⚠️ 活动超时提醒</div>
+      <div class="info">「妈妈」已 30 分钟无活动</div>
+      <div class="time">10 分钟前</div>
+    </div>
+
+    <div class="alert-card">
+      <div class="head">⚠️ 离线提醒</div>
+      <div class="info">「爸爸」可能已离线</div>
+      <div class="time">2 小时前</div>
+    </div>
+
+    <div class="normal-card">
+      <div class="head">✓ 活动已恢复</div>
+      <div class="info">「妈妈」已恢复活动</div>
+      <div class="time">5 分钟前</div>
+    </div>
+
+    <div class="normal-card">
+      <div class="head">✓ 已上线</div>
+      <div class="info">「爸爸」已恢复在线</div>
+      <div class="time">昨天</div>
+    </div>
+
+    <a class="back-to-index" href="index.html">← 返回场景地图</a>
+  </div>
+  <div class="phone-nav-bar"></div>
+</div>
+</body>
+</html>

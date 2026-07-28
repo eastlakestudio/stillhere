@@ -19,7 +19,7 @@ targets:
     info:
       path: AnhaoSpike/Info.plist
       properties:
-        CFBundleDisplayName: 安好
+        CFBundleDisplayName: 晴好
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
         UILaunchScreen:

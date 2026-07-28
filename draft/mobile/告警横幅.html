@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>告警横幅 - 晴好</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { margin: 0; padding: 40px 0; background: #e8eaed; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .phone-frame { width: 390px; background: #1a1a1a; border: 3px solid #333; border-radius: 36px; padding: 10px 7px; }
+  .phone-status-bar { width: 375px; height: 24px; margin: 0 auto; background: #000; border-radius: 28px 28px 0 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: relative; }
+  .phone-status-bar .time { color: #fff; font-size: 12px; font-weight: 500; margin-left: 16px; }
+  .phone-status-bar .icons { color: #fff; font-size: 10px; display: flex; gap: 6px; align-items: center; }
+  .phone-status-bar::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 8px; height: 8px; background: #333; border-radius: 50%; border: 1px solid #555; }
+  .phone-screen { width: 375px; height: 780px; margin: 0 auto; background: #fff; border-radius: 0 0 28px 28px; overflow-y: auto; overflow-x: hidden; }
+  .phone-nav-bar { width: 375px; height: 8px; margin: 0 auto; background: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+  .phone-nav-bar::after { content: ''; width: 134px; height: 4px; background: rgba(255,255,255,0.25); border-radius: 2px; }
+  .nav-bar { height: 48px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; background: #fff; }
+  .nav-bar .title { font-size: 17px; font-weight: 600; color: #333; }
+  .alert-banner { margin: 8px 16px; padding: 14px 16px; border: 1px solid #e74c3c; background: #fff; display: flex; align-items: center; justify-content: space-between; }
+  .alert-banner .text { font-size: 14px; color: #e74c3c; font-weight: 600; }
+  .alert-banner .countdown { font-size: 13px; color: #999; margin-left: 8px; }
+  .alert-banner button { padding: 6px 14px; background: #fff; border: 1px solid #e74c3c; color: #e74c3c; font-size: 13px; cursor: pointer; }
+  .card { margin: 12px 16px; border: 1px solid #e0e0e0; padding: 14px 16px; }
+  .card .label { font-size: 12px; color: #999; }
+  .card .value { font-size: 15px; color: #333; margin-top: 2px; font-weight: 600; }
+  .demo-section { padding: 16px; }
+  .demo-label { font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 600; }
+  .btn { display: block; width: calc(100% - 32px); margin: 0 16px; padding: 10px 0; background: #fff; border: 1px solid #333; color: #333; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 8px; }
+  .back-to-index { display: block; text-align: center; padding: 20px 16px; font-size: 12px; color: #999; text-decoration: none; border-top: 1px solid #e0e0e0; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="phone-status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+  <div class="phone-screen">
+    <div class="nav-bar"><span class="title">晴好</span></div>
+
+    <!-- 告警横幅 -->
+    <div class="alert-banner" id="banner">
+      <div>
+        <span class="text">🚨 已 30 分钟无活动</span>
+        <span class="countdown" id="cd">4:32 后通知关心人</span>
+      </div>
+      <button onclick="this.parentElement.style.display='none'">取消</button>
+    </div>
+
+    <div class="demo-section">
+      <div class="demo-label">告警信息</div>
+      <div class="card">
+        <div class="label">空闲时长</div>
+        <div class="value">30 分钟</div>
+      </div>
+      <div class="card">
+        <div class="label">告警阈值</div>
+        <div class="value">30 分钟</div>
+      </div>
+      <div class="card">
+        <div class="label">取消窗口</div>
+        <div class="value">5 分钟内点击「取消」可撤销</div>
+      </div>
+      <div class="card">
+        <div class="label">超时后</div>
+        <div class="value">通知所有关心人</div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <div class="demo-label">演示控制</div>
+      <button class="btn" onclick="document.getElementById('banner').style.display='flex';document.getElementById('cd').textContent='4:32 后通知关心人'">触发告警</button>
+    </div>
+
+    <a class="back-to-index" href="index.html">← 返回场景地图</a>
+  </div>
+  <div class="phone-nav-bar"></div>
+</div>
+</body>
+</html>
