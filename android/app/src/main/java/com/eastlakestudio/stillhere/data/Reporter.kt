@@ -2,6 +2,7 @@ package com.eastlakestudio.stillhere.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.provider.Settings
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +54,10 @@ object Reporter {
     private val _caredByCount = MutableStateFlow(0)
     val caredByCount: StateFlow<Int> = _caredByCount.asStateFlow()
 
+    private var appContext: Context? = null
+
     fun init(context: Context) {
+        appContext = context.applicationContext
         prefs = context.getSharedPreferences("anhao.spike", Context.MODE_PRIVATE)
         baseURL = prefs.getString(PREF_KEY_BASE_URL, null) ?: DEFAULT_WORKER_URL
     }
@@ -365,14 +369,21 @@ object Reporter {
     }
 
     private fun loadOrCreateDeviceId(): String {
-        val existing = if (::prefs.isInitialized) prefs.getString(PREF_KEY_DEVICE_ID, null) else null
-        if (!existing.isNullOrEmpty()) return existing
-
-        val new = UUID.randomUUID().toString()
-        if (::prefs.isInitialized) {
-            prefs.edit().putString(PREF_KEY_DEVICE_ID, new).apply()
+        val ctx = appContext
+        if (ctx != null) {
+            val androidId = Settings.Secure.getString(ctx.contentResolver, Settings.Secure.ANDROID_ID)
+            if (!androidId.isNullOrEmpty()) {
+                return deriveDeviceId(androidId)
+            }
         }
-        return new
+
+        return UUID.randomUUID().toString()
+    }
+
+    private fun deriveDeviceId(androidId: String): String {
+        val digest = MessageDigest.getInstance("SHA-256").digest(androidId.toByteArray(Charsets.UTF_8))
+        val hex = digest.joinToString("") { "%02x".format(it) }
+        return "${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20, 32)}"
     }
 
     /** SHA-256(deviceId) → hex 第 8~13 位 → 6 位大写关心码 */
