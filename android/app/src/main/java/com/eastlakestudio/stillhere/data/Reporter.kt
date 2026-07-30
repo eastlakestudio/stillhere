@@ -311,6 +311,40 @@ object Reporter {
         }
     }
 
+    /** 保存设备配置到服务端（守护时段、告警阈值、昵称等） */
+    suspend fun saveConfig(config: Map<String, Any?>): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val body = mapOf("deviceId" to deviceId, "config" to config)
+            val json = Gson().toJson(body)
+            val request = Request.Builder()
+                .url("$baseURL/config")
+                .post(json.toRequestBody("application/json".toMediaType()))
+                .build()
+            client.newCall(request).execute().use { it.isSuccessful }
+        } catch (e: Exception) {
+            android.util.Log.e("Reporter", "saveConfig failed: ${e.message}")
+            false
+        }
+    }
+
+    /** 从服务端拉取设备配置 */
+    suspend fun loadConfig(): Map<String, Any?>? = withContext(Dispatchers.IO) {
+        try {
+            val request = Request.Builder()
+                .url("$baseURL/config?deviceId=$deviceId")
+                .get().build()
+            val response = client.newCall(request).execute()
+            response.use { resp ->
+                if (!resp.isSuccessful) return@withContext null
+                val json = Gson().fromJson(resp.body?.string(), Map::class.java)
+                json["config"] as? Map<String, Any?>
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("Reporter", "loadConfig failed: ${e.message}")
+            null
+        }
+    }
+
     // MARK: - 问安
 
     /** 发送问安，返回问安记录 ID */

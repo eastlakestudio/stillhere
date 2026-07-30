@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>添加关心 - 晴好</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { margin: 0; padding: 40px 0; background: linear-gradient(135deg, #e8eaed 0%, #d5d8dc 100%); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .phone-frame { width: 390px; background: #1a1a1a; border: 3px solid #333; border-radius: 36px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 10px 7px; }
+  .phone-status-bar { width: 375px; height: 24px; margin: 0 auto; background: #000; border-radius: 28px 28px 0 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: relative; }
+  .phone-status-bar .time { color: #fff; font-size: 12px; font-weight: 500; margin-left: 16px; }
+  .phone-status-bar .icons { color: #fff; font-size: 10px; display: flex; gap: 6px; }
+  .phone-status-bar::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 8px; height: 8px; background: #333; border-radius: 50%; border: 1px solid #555; }
+  .phone-screen { width: 375px; height: 780px; margin: 0 auto; background: #FFF8F4; border-radius: 0 0 28px 28px; overflow-y: auto; }
+  .phone-nav-bar { width: 375px; height: 8px; margin: 0 auto; background: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+  .phone-nav-bar::after { content: ''; width: 134px; height: 4px; background: rgba(255,255,255,0.25); border-radius: 2px; }
+  .app-header { height: 56px; background: #FFF8F4; display: flex; align-items: center; padding: 0 12px; position: sticky; top: 0; z-index: 10; }
+  .app-header .back { font-size: 20px; color: #1C1B1F; cursor: pointer; border: none; background: none; width: 40px; text-align: center; }
+  .app-header .title { font-size: 20px; font-weight: 300; letter-spacing: 2px; color: #1C1B1F; }
+  .section { padding: 24px 16px; }
+  .section-label { font-size: 15px; font-weight: 500; color: #1C1B1F; margin-bottom: 16px; }
+  .scan-area { width: 200px; height: 200px; margin: 0 auto 20px; background: #F3EDF7; border: 2px solid #E7E0EC; display: flex; align-items: center; justify-content: center; color: #49454F; font-size: 14px; }
+  .input-group { display: flex; gap: 8px; }
+  .input-group input { flex: 1; padding: 14px 12px; border: 1px solid #E7E0EC; background: #fff; font-size: 18px; letter-spacing: 6px; text-align: center; font-family: monospace; color: #1C1B1F; }
+  .btn { display: block; width: 100%; padding: 14px 0; background: #C25A00; border: none; color: #fff; font-size: 15px; font-weight: 500; cursor: pointer; text-align: center; margin-top: 12px; }
+  .btn-outline { background: #FFF3E8; color: #C25A00; border: 1px solid #C25A00; }
+  .divider { border-top: 1px solid #E7E0EC; margin: 0 16px; }
+  .hint { font-size: 12px; color: #49454F; margin-top: 8px; }
+  .back-link { display: block; text-align: center; padding: 20px 16px; font-size: 12px; color: #999; text-decoration: none; }
+</style></head>
+<body>
+<div class="phone-frame">
+  <div class="phone-status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+  <div class="phone-screen">
+    <div class="app-header"><button class="back" onclick="location.href='index.html'">←</button><span class="title">添加关心</span></div>
+    <div class="section">
+      <div class="section-label">扫码添加</div>
+      <div class="scan-area">📷 相机扫描区域<br>200×200</div>
+      <button class="btn btn-outline" onclick="alert('打开相机扫码')">打开扫码</button>
+    </div>
+    <div class="divider"></div>
+    <div class="section">
+      <div class="section-label">手动输入关心码</div>
+      <div class="input-group"><input type="text" maxlength="6" placeholder="6位关心码" value=""></div>
+      <button class="btn" onclick="alert('添加关心')">确认添加</button>
+      <p class="hint">请让对方打开「我的关心码」页面，获取对方的 6 位码</p>
+    </div>
+    <a class="back-link" href="index.html">← 返回场景地图</a>
+  </div>
+  <div class="phone-nav-bar"></div>
+</div>
+</body>
+</html>

@@ -16,7 +16,7 @@
 | 计算 | Cloudflare Workers | 全球边缘节点，低延迟 |
 | 数据库 | Cloudflare D1 | SQLite 兼容分布式数据库 |
 | 定时任务 | Workers Cron Trigger | 离线检测 Watchdog |
-| 推送 | Apple APNs HTTP/2 | 仅 iOS，无线程外 Push（无 FCM） |
+| 推送 | 极光推送 (JPush) | Android 推送通道，免费额度内 |
 
 ## 三、隐私与安全约束
 

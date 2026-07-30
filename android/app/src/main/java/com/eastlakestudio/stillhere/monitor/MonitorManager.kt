@@ -206,6 +206,7 @@ class MonitorManager(
             val arr = JSONArray()
             value.forEach { arr.put(it.toJson()) }
             prefs.edit().putString(KEY_WINDOWS, arr.toString()).apply()
+            StillHereApp.instance.syncToCloud()
         }
 
     /** 旧数据迁移：睡眠时段 + 工作免打扰 → 监测时段 */
@@ -264,6 +265,7 @@ class MonitorManager(
         get() = prefs.getInt("anhao.spike.idleAlertMinutes", DEFAULT_IDLE_MINUTES)
         set(value) {
             prefs.edit().putInt("anhao.spike.idleAlertMinutes", value.coerceIn(5, 240)).apply()
+            StillHereApp.instance.syncToCloud()
         }
 
     /** 充电时是否忽略空闲告警，默认 false */
@@ -271,6 +273,7 @@ class MonitorManager(
         get() = prefs.getBoolean("anhao.spike.ignoreChargingAlert", false)
         set(value) {
             prefs.edit().putBoolean("anhao.spike.ignoreChargingAlert", value).apply()
+            StillHereApp.instance.syncToCloud()
         }
 
     init {

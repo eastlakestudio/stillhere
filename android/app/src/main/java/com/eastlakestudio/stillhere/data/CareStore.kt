@@ -124,19 +124,19 @@ class CareStore(context: Context) {
     fun addCaring(name: String, bindCode: String) {
         _caring.value = _caring.value + CareRelation(name = name, bindCode = bindCode)
         save()
-        // 向服务端登记关心关系（不传昵称，隐私数据保留本地）
         scope.launch {
             Reporter.registerCare(bindCode)
         }
+        com.eastlakestudio.stillhere.StillHereApp.instance.syncToCloud()
     }
 
     fun removeCaring(relation: CareRelation) {
         _caring.value = _caring.value.filter { it.id != relation.id }
         save()
-        // 同步删除服务端关心关系
         scope.launch {
             Reporter.unregisterCare(relation.bindCode)
         }
+        com.eastlakestudio.stillhere.StillHereApp.instance.syncToCloud()
     }
 
     fun updateCaringName(relation: CareRelation, newName: String) {
@@ -146,6 +146,17 @@ class CareStore(context: Context) {
             if (it.id == relation.id) it.copy(name = trimmed) else it
         }
         save()
+        com.eastlakestudio.stillhere.StillHereApp.instance.syncToCloud()
+    }
+
+    fun updateCaringNameByCode(bindCode: String, name: String) {
+        val existing = _caring.value.find { it.bindCode == bindCode }
+        if (existing != null) {
+            _caring.value = _caring.value.map {
+                if (it.bindCode == bindCode) it.copy(name = name) else it
+            }
+            save()
+        }
     }
 
     // MARK: - 活动状态刷新

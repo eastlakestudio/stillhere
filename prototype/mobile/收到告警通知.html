@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>收到告警通知 - 晴好</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { margin: 0; padding: 40px 0; background: linear-gradient(135deg, #e8eaed 0%, #d5d8dc 100%); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .phone-frame { width: 390px; background: #1a1a1a; border: 3px solid #333; border-radius: 36px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 10px 7px; }
+  .phone-status-bar { width: 375px; height: 24px; margin: 0 auto; background: #000; border-radius: 28px 28px 0 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: relative; }
+  .phone-status-bar .time { color: #fff; font-size: 12px; font-weight: 500; margin-left: 16px; }
+  .phone-status-bar .icons { color: #fff; font-size: 10px; display: flex; gap: 6px; }
+  .phone-status-bar::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 8px; height: 8px; background: #333; border-radius: 50%; border: 1px solid #555; }
+  .phone-screen { width: 375px; height: 780px; margin: 0 auto; background: #FFF8F4; border-radius: 0 0 28px 28px; overflow-y: auto; }
+  .phone-nav-bar { width: 375px; height: 8px; margin: 0 auto; background: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+  .phone-nav-bar::after { content: ''; width: 134px; height: 4px; background: rgba(255,255,255,0.25); border-radius: 2px; }
+  .app-header { height: 56px; background: #FFF8F4; display: flex; align-items: center; padding: 0 12px; }
+  .app-header .back { font-size: 20px; color: #1C1B1F; cursor: pointer; border: none; background: none; width: 40px; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+  .app-header .title { font-size: 20px; font-weight: 300; letter-spacing: 2px; color: #1C1B1F; }
+  .alert-summary { padding: 14px 18px 6px; font-size: 13px; font-weight: 500; color: #49454F; display: flex; align-items: center; gap: 8px; }
+  .alert-summary .badge { background: #B3261E; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .alert-card { margin: 8px 16px; padding: 14px 16px; background: #fff; border-left: 4px solid #B3261E; }
+  .alert-card.resolved { border-left-color: #3A8C3F; }
+  .alert-card .alert-header { display: flex; align-items: flex-start; justify-content: space-between; }
+  .alert-card .alert-type { font-size: 12px; font-weight: 500; color: #B3261E; text-transform: uppercase; letter-spacing: 0.5px; }
+  .alert-card.resolved .alert-type { color: #3A8C3F; }
+  .alert-card .alert-desc { font-size: 15px; font-weight: 500; color: #1C1B1F; margin-top: 4px; line-height: 1.4; }
+  .alert-card .alert-time { font-size: 12px; color: #49454F; margin-top: 6px; }
+  .alert-card .alert-actions { margin-top: 10px; display: flex; gap: 8px; }
+  .alert-card .alert-actions button { padding: 6px 14px; font-size: 12px; border: 1px solid #C25A00; background: #fff; color: #C25A00; cursor: pointer; font-weight: 500; }
+  .section-title { padding: 16px 18px 6px; font-size: 13px; font-weight: 500; color: #49454F; }
+  .back-link { display: block; text-align: center; padding: 20px 16px; font-size: 12px; color: #999; text-decoration: none; }
+</style></head>
+<body>
+<div class="phone-frame">
+  <div class="phone-status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+  <div class="phone-screen">
+    <div class="app-header"><a class="back" href="index.html">←</a><span class="title">告警通知</span></div>
+
+    <div class="alert-summary">⚠️ 共 <span class="badge">2</span> 条待处理告警</div>
+
+    <div class="alert-card">
+      <div class="alert-header">
+        <span class="alert-type">活动超时提醒</span>
+      </div>
+      <div class="alert-desc">妈妈已30分钟无活动</div>
+      <div class="alert-time">2026-07-29 09:41</div>
+      <div class="alert-actions">
+        <button onclick="location.href='发送问安.html'">发送问安</button>
+        <button onclick="alert('已忽略')">忽略</button>
+      </div>
+    </div>
+
+    <div class="alert-card">
+      <div class="alert-header">
+        <span class="alert-type">离线提醒</span>
+      </div>
+      <div class="alert-desc">爸爸可能已离线</div>
+      <div class="alert-time">2026-07-29 08:52</div>
+      <div class="alert-actions">
+        <button onclick="location.href='发送问安.html'">发送问安</button>
+        <button onclick="alert('已忽略')">忽略</button>
+      </div>
+    </div>
+
+    <div class="section-title">已恢复</div>
+
+    <div class="alert-card resolved">
+      <div class="alert-header">
+        <span class="alert-type">已恢复</span>
+      </div>
+      <div class="alert-desc">妈妈已恢复活动</div>
+      <div class="alert-time">2026-07-29 07:30</div>
+    </div>
+
+    <div class="alert-card resolved">
+      <div class="alert-header">
+        <span class="alert-type">已上线</span>
+      </div>
+      <div class="alert-desc">爸爸已恢复在线</div>
+      <div class="alert-time">2026-07-28 23:15</div>
+    </div>
+
+    <a class="back-link" href="index.html">← 返回场景地图</a>
+  </div>
+  <div class="phone-nav-bar"></div>
+</div>
+</body>
+</html>

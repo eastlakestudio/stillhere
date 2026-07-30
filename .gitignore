@@ -34,3 +34,4 @@ client_secret_*.json
 .vscode/
 icon.png.bak
 *.bak
+*.jks

@@ -22,3 +22,8 @@ crons = ["*/5 * * * *"]
 
 [observability]
 enabled = true
+
+[vars]
+APNS_KEY_ID = "K44F55XY24"
+APNS_TEAM_ID = "J4RT98GF7B"
+APP_BUNDLE_ID = "com.eastlakestudio.stillhere"

@@ -26,7 +26,6 @@ targets:
           UIColorName: ""
         UIBackgroundModes:
           - location
-          - motion
           - remote-notification
         BGTaskSchedulerPermittedIdentifiers:
           - com.eastlakestudio.stillhere.refresh
@@ -41,4 +40,4 @@ targets:
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        TARGETED_DEVICE_FAMILY: "1,2"
+        TARGETED_DEVICE_FAMILY: "1"

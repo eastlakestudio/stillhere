@@ -47,6 +47,7 @@ actor Reporter {
             "userId": deviceId,
             "careCode": careCode,
             "isCharging": isCharging,
+            "deviceToken": UserDefaults.standard.string(forKey: "anhao.spike.deviceToken") ?? "",
         ]
 
         do {

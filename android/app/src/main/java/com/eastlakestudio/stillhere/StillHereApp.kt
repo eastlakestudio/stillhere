@@ -7,6 +7,9 @@ import com.eastlakestudio.stillhere.data.CareStore
 import com.eastlakestudio.stillhere.data.Logger
 import com.eastlakestudio.stillhere.data.Reporter
 import com.eastlakestudio.stillhere.monitor.MonitorManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Application — 初始化全局单例
@@ -49,6 +52,80 @@ class StillHereApp : Application() {
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(greetingChannel)
         nm.createNotificationChannel(alertChannel)
+
+        restoreFromCloud()
+    }
+
+    private val syncScope = CoroutineScope(Dispatchers.IO)
+
+    private fun restoreFromCloud() {
+        syncScope.launch {
+            try {
+                val config = Reporter.loadConfig() ?: return@launch
+
+                // 恢复守护时段
+                val windows = config["monitoringWindows"] as? List<*>
+                if (windows != null && windows.isNotEmpty()) {
+                    val restored = windows.mapNotNull { w ->
+                        val m = w as? Map<*, *> ?: return@mapNotNull null
+                        com.eastlakestudio.stillhere.monitor.TimeWindow(
+                            (m["startHour"] as? Double)?.toInt() ?: 9,
+                            (m["startMinute"] as? Double)?.toInt() ?: 0,
+                            (m["endHour"] as? Double)?.toInt() ?: 18,
+                            (m["endMinute"] as? Double)?.toInt() ?: 0,
+                            m["label"] as? String ?: ""
+                        )
+                    }
+                    if (restored.isNotEmpty()) monitorManager.monitoringWindows = restored
+                }
+
+                // 恢复告警阈值
+                (config["idleAlertMinutes"] as? Double)?.toInt()?.let {
+                    monitorManager.idleAlertMinutes = it
+                }
+
+                // 恢复充电忽略
+                (config["ignoreChargingForAlert"] as? Boolean)?.let {
+                    monitorManager.ignoreChargingForAlert = it
+                }
+
+                // 恢复昵称
+                val nicknames = config["nicknames"] as? Map<*, *>
+                if (nicknames != null) {
+                    nicknames.forEach { (code, name) ->
+                        careStore.updateCaringNameByCode(code.toString(), name.toString())
+                    }
+                }
+
+                android.util.Log.d("StillHereApp", "config restored from cloud")
+            } catch (e: Exception) {
+                android.util.Log.e("StillHereApp", "restoreFromCloud failed: ${e.message}")
+            }
+        }
+    }
+
+    fun syncToCloud() {
+        syncScope.launch {
+            try {
+                val config = mapOf(
+                    "monitoringWindows" to monitorManager.monitoringWindows.map {
+                        mapOf(
+                            "startHour" to it.startHour,
+                            "startMinute" to it.startMinute,
+                            "endHour" to it.endHour,
+                            "endMinute" to it.endMinute,
+                            "label" to it.label
+                        )
+                    },
+                    "idleAlertMinutes" to monitorManager.idleAlertMinutes,
+                    "ignoreChargingForAlert" to monitorManager.ignoreChargingForAlert,
+                    "nicknames" to careStore.caring.value.associate { it.bindCode to it.name }
+                )
+                Reporter.saveConfig(config)
+            } catch (e: Exception) {
+                android.util.Log.e("StillHereApp", "syncToCloud failed: ${e.message}")
+            }
+        }
     }
 
     companion object {

@@ -57,3 +57,10 @@ CREATE TABLE IF NOT EXISTS greetings (
 
 CREATE INDEX IF NOT EXISTS idx_greetings_to_code ON greetings(to_code, replied_at);
 CREATE INDEX IF NOT EXISTS idx_greetings_from ON greetings(from_device_id);
+
+-- 设备配置表：守护时段、告警阈值等，跨重装恢复
+CREATE TABLE IF NOT EXISTS device_config (
+    device_id   TEXT PRIMARY KEY,
+    config_json TEXT NOT NULL,
+    updated_at  INTEGER NOT NULL DEFAULT (unixepoch())
+);

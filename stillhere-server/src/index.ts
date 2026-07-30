@@ -3,12 +3,12 @@ import { handleCare } from './routes/care';
 import { handleCaredStatus } from './routes/cared-status';
 import { handleCaredByMe } from './routes/cared-by-me';
 import { handleCaring } from './routes/caring';
+import { handleConfig } from './routes/config';
 import { handleGreeting } from './routes/greeting';
 import { handleDashboard } from './routes/dashboard';
 import { handleAlert } from './routes/alert';
 import { handlePendingAlerts } from './routes/pending-alerts';
 import { handleCallback, redirectToGoogle, logout } from './lib/auth';
-import { landingPage } from './pages/landing';
 import { runWatchdog } from './cron/watchdog';
 import { Env, jsonResponse } from './shared';
 
@@ -29,9 +29,7 @@ export default {
     try {
       switch (path) {
         case '/':
-          return new Response(landingPage(), {
-            headers: { 'Content-Type': 'text/html; charset=utf-8' },
-          });
+          return jsonResponse({ name: '晴好 API', version: '0.1.0' });
         case '/heartbeat':
           return await handleHeartbeat(request, env);
         case '/care':
@@ -49,6 +47,8 @@ export default {
           return await handleCaredByMe(request, env);
         case '/caring':
           return await handleCaring(request, env);
+        case '/config':
+          return await handleConfig(request, env);
         case '/greeting':
         case '/greeting/reply':
         case '/pending-greetings':

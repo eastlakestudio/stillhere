@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>守护时段配置 - 晴好</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { margin: 0; padding: 40px 0; background: linear-gradient(135deg, #e8eaed 0%, #d5d8dc 100%); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .phone-frame { width: 390px; background: #1a1a1a; border: 3px solid #333; border-radius: 36px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 10px 7px; }
+  .phone-status-bar { width: 375px; height: 24px; margin: 0 auto; background: #000; border-radius: 28px 28px 0 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: relative; }
+  .phone-status-bar .time { color: #fff; font-size: 12px; font-weight: 500; margin-left: 16px; }
+  .phone-status-bar .icons { color: #fff; font-size: 10px; display: flex; gap: 6px; }
+  .phone-status-bar::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 8px; height: 8px; background: #333; border-radius: 50%; border: 1px solid #555; }
+  .phone-screen { width: 375px; height: 780px; margin: 0 auto; background: #FFF8F4; border-radius: 0 0 28px 28px; overflow-y: auto; }
+  .phone-nav-bar { width: 375px; height: 8px; margin: 0 auto; background: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+  .phone-nav-bar::after { content: ''; width: 134px; height: 4px; background: rgba(255,255,255,0.25); border-radius: 2px; }
+  .app-header { height: 56px; background: #FFF8F4; display: flex; align-items: center; padding: 0 12px; }
+  .app-header .back { font-size: 20px; color: #1C1B1F; cursor: pointer; border: none; background: none; width: 40px; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+  .app-header .title { font-size: 20px; font-weight: 300; letter-spacing: 2px; color: #1C1B1F; }
+  .section-title { padding: 14px 18px 6px; font-size: 13px; font-weight: 500; color: #49454F; }
+  .window-card { margin: 8px 16px; padding: 16px; background: #F3EDF7; display: flex; align-items: center; justify-content: space-between; }
+  .window-card .info { flex: 1; }
+  .window-card .time-range { font-size: 16px; font-weight: 500; color: #1C1B1F; font-family: monospace; }
+  .window-card .duration { font-size: 12px; color: #49454F; margin-top: 2px; }
+  .window-card .actions { display: flex; gap: 8px; }
+  .window-card .actions button { padding: 6px 12px; font-size: 12px; border: 1px solid #C25A00; background: #fff; color: #C25A00; cursor: pointer; }
+  .window-card .actions button.delete { border-color: #B3261E; color: #B3261E; }
+  .add-btn { display: block; width: calc(100% - 32px); margin: 8px 16px; padding: 12px 0; background: #fff; border: 1px dashed #C25A00; color: #C25A00; font-size: 14px; cursor: pointer; text-align: center; font-weight: 500; }
+  .setting-card { margin: 8px 16px; padding: 16px; background: #fff; border: 1px solid #E7E0EC; }
+  .setting-card .setting-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .setting-card .setting-label { font-size: 14px; font-weight: 500; color: #1C1B1F; }
+  .setting-card .setting-value { font-size: 14px; color: #C25A00; font-weight: 500; }
+  .slider-container { padding: 0 4px; }
+  .slider-container input[type=range] { width: 100%; -webkit-appearance: none; height: 4px; background: #E7E0EC; border-radius: 2px; outline: none; }
+  .slider-container input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: #C25A00; border-radius: 50%; cursor: pointer; }
+  .slider-labels { display: flex; justify-content: space-between; font-size: 11px; color: #49454F; margin-top: 4px; }
+  .setting-row { margin: 0 16px 8px; padding: 14px 16px; background: #fff; border: 1px solid #E7E0EC; display: flex; align-items: center; justify-content: space-between; }
+  .setting-row .label { font-size: 14px; color: #1C1B1F; }
+  .toggle { width: 44px; height: 24px; background: #E7E0EC; border-radius: 12px; position: relative; cursor: pointer; }
+  .toggle.on { background: #C25A00; }
+  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: left 0.2s; }
+  .toggle.on::after { left: 22px; }
+  .summary { padding: 8px 18px; font-size: 12px; color: #49454F; }
+  .back-link { display: block; text-align: center; padding: 20px 16px; font-size: 12px; color: #999; text-decoration: none; }
+</style></head>
+<body>
+<div class="phone-frame">
+  <div class="phone-status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+  <div class="phone-screen">
+    <div class="app-header"><a class="back" href="index.html">←</a><span class="title">守护时段配置</span></div>
+
+    <div class="section-title">守护时段</div>
+    <div class="summary">总时长: 9小时 · 2个时段</div>
+
+    <div class="window-card">
+      <div class="info">
+        <div class="time-range">09:00 – 18:00</div>
+        <div class="duration">9小时</div>
+      </div>
+      <div class="actions">
+        <button onclick="alert('编辑时段')">编辑</button>
+        <button class="delete" onclick="confirm('确定删除？')&&this.closest('.window-card').remove()">删除</button>
+      </div>
+    </div>
+
+    <div class="window-card">
+      <div class="info">
+        <div class="time-range">20:00 – 22:00</div>
+        <div class="duration">2小时</div>
+      </div>
+      <div class="actions">
+        <button onclick="alert('编辑时段')">编辑</button>
+        <button class="delete" onclick="confirm('确定删除？')&&this.closest('.window-card').remove()">删除</button>
+      </div>
+    </div>
+
+    <button class="add-btn" onclick="alert('添加时段')">+ 添加时段</button>
+
+    <div class="section-title">告警阈值</div>
+    <div class="setting-card">
+      <div class="setting-header">
+        <span class="setting-label">静置告警阈值</span>
+        <span class="setting-value" id="thresholdVal">30 分钟</span>
+      </div>
+      <div class="slider-container">
+        <input type="range" min="5" max="120" step="5" value="30" oninput="document.getElementById('thresholdVal').textContent=this.value+' 分钟'">
+      </div>
+      <div class="slider-labels">
+        <span>5分钟</span><span>120分钟</span>
+      </div>
+    </div>
+
+    <div class="section-title">其他</div>
+    <div class="setting-row">
+      <span class="label">充电时忽略告警</span>
+      <span class="toggle on" id="chargeToggle" onclick="this.classList.toggle('on')"></span>
+    </div>
+
+    <a class="back-link" href="index.html">← 返回场景地图</a>
+  </div>
+  <div class="phone-nav-bar"></div>
+</div>
+</body>
+</html>

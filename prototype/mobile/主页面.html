@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>晴好 - 主页面</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { margin: 0; padding: 40px 0; background: linear-gradient(135deg, #e8eaed 0%, #d5d8dc 100%); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .phone-frame { width: 390px; background: #1a1a1a; border: 3px solid #333; border-radius: 36px; box-shadow: 0 20px 60px rgba(0,0,0,0.3), inset 0 0 10px rgba(255,255,255,0.05); padding: 10px 7px; }
+  .phone-status-bar { width: 375px; height: 24px; margin: 0 auto; background: #000; border-radius: 28px 28px 0 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: relative; }
+  .phone-status-bar .time { color: #fff; font-size: 12px; font-weight: 500; margin-left: 16px; }
+  .phone-status-bar .icons { color: #fff; font-size: 10px; display: flex; gap: 6px; align-items: center; }
+  .phone-status-bar::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 8px; height: 8px; background: #333; border-radius: 50%; border: 1px solid #555; }
+  .phone-screen { width: 375px; height: 780px; margin: 0 auto; background: #FFF8F4; border-radius: 0 0 28px 28px; overflow-y: auto; overflow-x: hidden; }
+  .phone-nav-bar { width: 375px; height: 8px; margin: 0 auto; background: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+  .phone-nav-bar::after { content: ''; width: 134px; height: 4px; background: rgba(255,255,255,0.25); border-radius: 2px; }
+
+  .app-header { height: 56px; background: #FFF8F4; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 10; }
+  .app-header .title { font-size: 20px; font-weight: 300; letter-spacing: 3px; color: #1C1B1F; }
+
+  .alert-banner { margin: 8px 16px; padding: 14px 16px; background: #FFEBEE; border: 1px solid #B3261E; display: flex; align-items: center; justify-content: space-between; }
+  .alert-banner .text { font-size: 14px; color: #B3261E; font-weight: 500; }
+  .alert-banner .cancel { font-size: 13px; color: #B3261E; background: none; border: 1px solid #B3261E; padding: 6px 14px; cursor: pointer; }
+
+  .card { margin: 8px 16px; background: #F3EDF7; padding: 16px; }
+  .card .card-title { font-size: 16px; font-weight: 500; color: #1C1B1F; margin-bottom: 4px; }
+  .card .card-subtitle { font-size: 13px; color: #49454F; }
+  .card .card-actions { margin-top: 10px; display: flex; gap: 8px; }
+  .card .card-actions button { padding: 8px 16px; background: #6750A4; border: none; color: #fff; font-size: 13px; cursor: pointer; font-weight: 500; }
+
+  .card-secondary { margin: 8px 16px; background: #fff; padding: 16px; border: 1px solid #E7E0EC; }
+  .card-secondary .card-title { font-size: 16px; font-weight: 500; color: #1C1B1F; margin-bottom: 4px; }
+  .card-secondary .card-actions { margin-top: 10px; display: flex; gap: 8px; }
+  .card-secondary .card-actions button { padding: 8px 16px; background: #EADDFF; border: none; color: #21005D; font-size: 13px; cursor: pointer; font-weight: 500; }
+
+  .time-summary { padding: 10px 18px; font-size: 13px; color: #49454F; font-weight: 500; }
+
+  .quick-actions { display: flex; gap: 12px; padding: 10px 16px 14px; }
+  .quick-actions button { flex: 1; padding: 12px 0; background: #C25A00; border: none; color: #fff; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .quick-actions button.secondary { background: #FFF3E8; color: #C25A00; border: 1px solid #C25A00; }
+
+  .list-title { padding: 14px 18px 6px; font-size: 13px; font-weight: 500; color: #49454F; }
+
+  .caring-item { margin: 4px 16px; padding: 14px 16px; background: #fff; border: 1px solid #E7E0EC; display: flex; align-items: center; justify-content: space-between; }
+  .caring-item .info { flex: 1; }
+  .caring-item .name { font-size: 16px; font-weight: 500; color: #1C1B1F; }
+  .caring-item .name .mutual { font-size: 11px; color: #C25A00; border: 1px solid #C25A00; padding: 1px 6px; margin-left: 6px; }
+  .caring-item .status { font-size: 12px; color: #49454F; margin-top: 2px; }
+  .caring-item .city { font-size: 12px; color: #7D5260; margin-top: 2px; }
+  .caring-item .actions a { font-size: 13px; color: #C25A00; text-decoration: none; cursor: pointer; font-weight: 500; }
+
+  .back-link { display: block; text-align: center; padding: 20px 16px; font-size: 12px; color: #999; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="phone-status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+  <div class="phone-screen">
+    <div class="app-header"><span class="title">晴好</span></div>
+
+    <!-- 告警横幅 (默认隐藏) -->
+    <div class="alert-banner" style="display:none" id="alertBanner">
+      <span class="text">🚨 已 30 分钟无活动 · 4:32 后通知</span>
+      <button class="cancel" onclick="this.parentElement.style.display='none'">取消</button>
+    </div>
+
+    <!-- 关心码卡片 -->
+    <div class="card">
+      <div class="card-title">我的关心码: A1B2C3</div>
+      <div class="card-subtitle">分享给家人，对方输入此码即可添加你为关心对象</div>
+      <div class="card-actions">
+        <button onclick="location.href='我的关心码.html'">查看二维码</button>
+        <button style="background:#EADDFF;color:#21005D" onclick="alert('分享')">分享</button>
+      </div>
+    </div>
+
+    <!-- 被关心统计 -->
+    <div class="card-secondary">
+      <div class="card-title">有 3 人在关心我</div>
+      <div class="card-actions">
+        <button onclick="location.href='谁在关心我.html'">查看详情</button>
+      </div>
+    </div>
+
+    <!-- 时段摘要 -->
+    <div class="time-summary">守护时段: 2个时段 · 共 9 小时</div>
+
+    <!-- 快捷操作 -->
+    <div class="quick-actions">
+      <button onclick="location.href='添加关心.html'">+ 添加关心</button>
+      <button class="secondary" onclick="location.href='守护时段配置.html'">⏰ 守护时段</button>
+    </div>
+
+    <!-- 关心列表 -->
+    <div class="list-title">我关心的 (2人)</div>
+
+    <div class="caring-item" style="cursor:pointer" onclick="location.href='关心对象详情.html'">
+      <div class="info">
+        <div class="name">妈妈 <span class="mutual">互关</span></div>
+        <div class="status">刚刚活跃 · 🔋</div>
+        <div class="city">北京</div>
+      </div>
+      <div class="actions"><a href="#" onclick="event.stopPropagation();location.href='发送问安.html'">问安</a></div>
+    </div>
+
+    <div class="caring-item" style="cursor:pointer" onclick="location.href='关心对象详情.html'">
+      <div class="info">
+        <div class="name">爸爸</div>
+        <div class="status">30分钟前活跃 · ⚡</div>
+        <div class="city">上海</div>
+      </div>
+      <div class="actions"><a href="#" onclick="event.stopPropagation();location.href='发送问安.html'">问安</a></div>
+    </div>
+
+    <a class="back-link" href="index.html">← 返回场景地图</a>
+  </div>
+  <div class="phone-nav-bar"></div>
+</div>
+</body>
+</html>
