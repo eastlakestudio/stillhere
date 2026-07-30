@@ -230,16 +230,21 @@ struct ContentView: View {
                 // MARK: - 底部固定按钮区
                 VStack(spacing: 10) {
                     // 时段配置入口（独立一行）
-                    Button {
+                     Button {
                         showTimeWindowConfig = true
                     } label: {
                         HStack(spacing: 8) {
                             Image(systemName: "clock.badge.checkmark")
                                 .font(.subheadline)
                                 .foregroundStyle(.blue)
-                            Text(timeWindowSummary)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(timeWindowSummary)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                Text("上次活跃 \(manager.lastActivityText)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                             Spacer()
                             Image(systemName: "chevron.right")
                                 .font(.caption2)
@@ -1318,17 +1323,10 @@ struct CareDetailSheet: View {
                 Button(role: .destructive) {
                     showConfirm = true
                 } label: {
-                    HStack {
-                        Image(systemName: "trash")
-                        Text("移除关心")
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    Text("移除关心")
+                        .font(.caption)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.red.opacity(0.15))
-                .foregroundStyle(.red)
-                .padding(.horizontal, 24)
+                .padding(.top, 20)
                 .padding(.bottom, 32)
             }
             .navigationTitle("关心详情")

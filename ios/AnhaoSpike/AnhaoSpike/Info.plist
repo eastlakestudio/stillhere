@@ -23,7 +23,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>0.1.0</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>3</string>
 	<key>NSCameraUsageDescription</key>
 	<string>扫码添加家人时需要相机权限来扫描关心码。</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

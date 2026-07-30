@@ -88,6 +88,19 @@ final class MonitorManager: ObservableObject, Sendable {
             UserDefaults.standard.set(newValue.timeIntervalSince1970, forKey: "anhao.spike.lastActivity")
         }
     }
+
+    /// 可读的最后活动文案（用于 UI 展示）
+    var lastActivityText: String {
+        let seconds = Date().timeIntervalSince(lastActivityTime)
+        switch seconds {
+        case ..<60:  return "刚刚活跃"
+        case ..<120: return "1 分钟前"
+        case ..<3600: return "\(Int(seconds / 60)) 分钟前"
+        case ..<7200: return "1 小时前"
+        case ..<86400: return "\(Int(seconds / 3600)) 小时前"
+        default: return "\(Int(seconds / 86400)) 天前"
+        }
+    }
     /// 上次告警时间（持久化，避免跨启动重复告警）
     private var lastAlertTime: Date {
         get {
