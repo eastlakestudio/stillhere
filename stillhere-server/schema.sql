@@ -3,6 +3,7 @@
 -- 用户表：记录心跳上报
 CREATE TABLE IF NOT EXISTS users (
     id              TEXT PRIMARY KEY,          -- 客户端生成的 UUID（deviceId）
+    care_code       TEXT DEFAULT NULL,         -- 6 位关心码（heartbeat 上报时冗余存储，供 watchdog 反查）
     device_token    TEXT DEFAULT NULL,         -- APNs device token（可选，push 用）
     last_active_time INTEGER NOT NULL DEFAULT 0, -- 最后活动时间戳（秒）
     threshold_minutes INTEGER NOT NULL DEFAULT 120, -- 超时阈值（分），可动态调整

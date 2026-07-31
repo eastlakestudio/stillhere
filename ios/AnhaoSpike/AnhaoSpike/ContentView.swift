@@ -332,9 +332,8 @@ struct ContentView: View {
                 while !Task.isCancelled {
                     await fetchGreetings()
                     await careStore.refreshCaredStatus()
-                    // 前台 10s，后台 60s
-                    let interval: UInt64 = scenePhase == .active ? 10_000_000_000 : 60_000_000_000
-                    try? await Task.sleep(nanoseconds: interval)
+                    // 前台 60s，后台 60s
+                    try? await Task.sleep(nanoseconds: 60_000_000_000)
                 }
             }
             .onChange(of: scenePhase) { _, newPhase in

@@ -36,18 +36,23 @@ export async function handleHeartbeat(request: Request, env: Env): Promise<Respo
     'SELECT online_status FROM users WHERE id = ?1'
   ).bind(userId).first<{ online_status: string }>();
 
+  // 标准化 careCode（供 users.care_code 冗余存储）
+  const code = careCode?.trim().toUpperCase().slice(0, 6) || null;
+  const validCode = code && code.length === 6 ? code : null;
+
   // upsert: 新用户 insert，已存在 update（同时标记为 online）
   await env.DB.prepare(`
-    INSERT INTO users (id, device_token, last_active_time, is_charging, last_city, online_status)
-    VALUES (?1, ?2, ?3, ?4, ?5, 'online')
+    INSERT INTO users (id, care_code, device_token, last_active_time, is_charging, last_city, online_status)
+    VALUES (?1, ?2, ?3, ?4, ?5, ?6, 'online')
     ON CONFLICT(id) DO UPDATE SET
-      device_token = COALESCE(?2, device_token),
-      last_active_time = ?3,
-      is_charging = ?4,
-      last_city = COALESCE(?5, last_city),
+      care_code = COALESCE(?2, care_code),
+      device_token = COALESCE(?3, device_token),
+      last_active_time = ?4,
+      is_charging = ?5,
+      last_city = COALESCE(?6, last_city),
       online_status = 'online'
   `)
-    .bind(userId, deviceToken || null, ts, isCharging ? 1 : 0, loc)
+    .bind(userId, validCode, deviceToken || null, ts, isCharging ? 1 : 0, loc)
     .run();
 
   // 如果用户之前是离线状态 → 插入恢复告警，通知关心人
@@ -55,11 +60,10 @@ export async function handleHeartbeat(request: Request, env: Env): Promise<Respo
 
   // 查询有多少人在关心当前用户（使用客户端上报的 careCode 精确匹配）
   let caredByCount = 0;
-  if (careCode && careCode.length === 6) {
-    const code = careCode.trim().toUpperCase();
+  if (validCode) {
     const caredByResult = await env.DB.prepare(
       'SELECT COUNT(*) as count FROM care_relations WHERE to_code = ?1'
-    ).bind(code).first<{ count: number }>();
+    ).bind(validCode).first<{ count: number }>();
     caredByCount = caredByResult?.count || 0;
 
     // 如果之前离线，插入上线恢复告警
@@ -67,7 +71,7 @@ export async function handleHeartbeat(request: Request, env: Env): Promise<Respo
       await env.DB.prepare(`
         INSERT INTO alerts (user_id, care_code, alert_type, created_at, is_resolved)
         VALUES (?1, ?2, 'online', ?3, 0)
-      `).bind(userId, code, ts).run();
+      `).bind(userId, validCode, ts).run();
     }
   }
 
