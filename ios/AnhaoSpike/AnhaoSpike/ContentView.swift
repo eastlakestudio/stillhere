@@ -332,8 +332,8 @@ struct ContentView: View {
                 while !Task.isCancelled {
                     await fetchGreetings()
                     await careStore.refreshCaredStatus()
-                    // 前台 2s，后台 60s
-                    let interval: UInt64 = scenePhase == .active ? 2_000_000_000 : 60_000_000_000
+                    // 前台 10s，后台 60s
+                    let interval: UInt64 = scenePhase == .active ? 10_000_000_000 : 60_000_000_000
                     try? await Task.sleep(nanoseconds: interval)
                 }
             }
@@ -343,9 +343,9 @@ struct ContentView: View {
                 }
             }
             .task {
-                // 前台期间每 3 秒刷新被关心人数
+                // 前台期间每 60 秒心跳（startAll/reportForeground 已含启动即时心跳）
                 while !Task.isCancelled {
-                    try? await Task.sleep(nanoseconds: scenePhase == .active ? 3_000_000_000 : 60_000_000_000)
+                    try? await Task.sleep(nanoseconds: scenePhase == .active ? 60_000_000_000 : 360_000_000_000)
                     manager.sendHeartbeatNow()
                 }
             }

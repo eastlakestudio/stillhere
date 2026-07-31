@@ -109,7 +109,7 @@ class CareStore(context: Context) {
                 val newOnes = remote.filter { it.bindCode !in existingCodes }
                 if (newOnes.isEmpty()) return@launch
                 _caring.value = _caring.value + newOnes.map {
-                    CareRelation(name = it.bindCode, bindCode = it.bindCode)
+                    CareRelation(name = it.name.ifEmpty { it.bindCode }, bindCode = it.bindCode)
                 }
                 save()
                 android.util.Log.d("CareStore", "synced ${newOnes.size} relations from server")

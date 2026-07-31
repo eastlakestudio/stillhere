@@ -302,7 +302,10 @@ object Reporter {
                 val caring = json["caring"] as? List<*> ?: return@withContext emptyList()
                 caring.mapNotNull { c ->
                     val m = c as? Map<*, *> ?: return@mapNotNull null
-                    CaringRelation(bindCode = m["bindCode"] as? String ?: "")
+                    CaringRelation(
+                        bindCode = m["bindCode"] as? String ?: "",
+                        name = m["name"] as? String ?: ""
+                    )
                 }
             }
         } catch (e: Exception) {
@@ -491,7 +494,8 @@ data class PendingGreeting(
 
 /** 服务端返回的关心关系（用于恢复） */
 data class CaringRelation(
-    val bindCode: String
+    val bindCode: String,
+    val name: String = ""
 )
 
 // DNS-over-HTTPS: 绕过厂商 DNS 代理，用 Cloudflare 1.1.1.1 做域名解析
