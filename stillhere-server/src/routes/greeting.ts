@@ -196,14 +196,21 @@ async function handlePendingGreetings(request: Request, env: Env): Promise<Respo
 
   const code = careCode.trim().toUpperCase();
 
-  // 只查询主动问安（排除答复消息，答复不需要再被答复）
+  // 查询未通知的问安和回复（用 notified 去重，包含反向回复记录）
   const greetings = await env.DB.prepare(
-    'SELECT id, from_device_id, message, created_at, reply_to_id FROM greetings WHERE to_code = ?1 AND reply IS NULL AND reply_to_id IS NULL ORDER BY created_at DESC LIMIT 20'
+    'SELECT id, from_device_id, message, created_at, reply_to_id FROM greetings WHERE to_code = ?1 AND reply IS NULL AND notified = 0 ORDER BY created_at DESC LIMIT 20'
   ).bind(code).all<{ id: number; from_device_id: string; message: string; created_at: number; reply_to_id: number | null }>();
 
   if (!greetings.results || greetings.results.length === 0) {
     return jsonResponse({ greetings: [] });
   }
+
+  // 标记为已通知，防止重复返回
+  const ids = greetings.results.map(g => g.id);
+  const placeholders = ids.map((_, i) => `?${i + 1}`).join(',');
+  await env.DB.prepare(
+    `UPDATE greetings SET notified = 1 WHERE id IN (${placeholders})`
+  ).bind(...ids).run();
 
   // 为每个发送者计算关心码
   const result = await Promise.all(

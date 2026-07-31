@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS care_relations (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     from_device_id  TEXT NOT NULL,              -- 发起关心的设备 ID
     to_code         TEXT NOT NULL,              -- 被关心方的关心码（6 位）
-    name            TEXT NOT NULL,              -- 昵称
+    name            TEXT NOT NULL DEFAULT '',   -- 昵称（服务端不主动使用，仅预留）
     created_at      INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
