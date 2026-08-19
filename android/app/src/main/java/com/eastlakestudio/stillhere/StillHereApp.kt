@@ -101,6 +101,8 @@ class StillHereApp : Application() {
             } catch (e: Exception) {
                 android.util.Log.e("StillHereApp", "restoreFromCloud failed: ${e.message}")
             }
+            // 启动时全量上传一次（含时区），确保服务端拿到最新守护配置用于裁决
+            syncToCloud()
         }
     }
 
@@ -119,6 +121,7 @@ class StillHereApp : Application() {
                     },
                     "idleAlertMinutes" to monitorManager.idleAlertMinutes,
                     "ignoreChargingForAlert" to monitorManager.ignoreChargingForAlert,
+                    "timezoneOffsetMinutes" to (java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 60000),
                     "nicknames" to careStore.caring.value.associate { it.bindCode to it.name }
                 )
                 Reporter.saveConfig(config)

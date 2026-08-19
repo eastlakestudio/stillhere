@@ -149,7 +149,29 @@ final class MonitorManager: ObservableObject, Sendable {
             if let data = try? JSONEncoder().encode(newValue) {
                 UserDefaults.standard.set(data, forKey: Self.keyWindows)
             }
+            syncConfigToCloud()
         }
+    }
+
+    /// 配置变更/启动时上传守护配置到服务端（供服务端按用户配置裁决空闲告警）
+    func syncConfigToCloud() {
+        let tzMinutes = TimeZone.current.secondsFromGMT() / 60
+        var nicknames: [String: String] = [:]
+        careStore?.caring.forEach { nicknames[$0.bindCode] = $0.name }
+        let config: [String: Any] = [
+            "monitoringWindows": monitoringWindows.map { [
+                "startHour": $0.startHour,
+                "startMinute": $0.startMinute,
+                "endHour": $0.endHour,
+                "endMinute": $0.endMinute,
+                "label": $0.label,
+            ] },
+            "idleAlertMinutes": idleAlertMinutes,
+            "timezoneOffsetMinutes": tzMinutes,
+            "nicknames": nicknames,
+        ]
+        guard let json = try? JSONSerialization.data(withJSONObject: config) else { return }
+        Task { await Reporter.shared.saveConfig(json: json) }
     }
 
     /// 旧数据迁移：wakeHour/sleepHour → monitoringWindows
@@ -191,7 +213,10 @@ final class MonitorManager: ObservableObject, Sendable {
     /// 空闲告警阈值（分钟），默认 30
     var idleAlertMinutes: Int {
         get { max(UserDefaults.standard.integer(forKey: "anhao.spike.idleAlertMinutes"), 5) }
-        set { UserDefaults.standard.set(newValue, forKey: "anhao.spike.idleAlertMinutes") }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "anhao.spike.idleAlertMinutes")
+            syncConfigToCloud()
+        }
     }
 
     /// 防止并发心跳
@@ -259,6 +284,9 @@ final class MonitorManager: ObservableObject, Sendable {
 
         // 启动时立即发送心跳（让关心人看到「刚刚活跃」、刷新被关心人数）
         sendHeartbeatNow()
+
+        // 上传守护配置到服务端（供服务端裁决空闲告警）
+        syncConfigToCloud()
     }
 
     func stopAll() {

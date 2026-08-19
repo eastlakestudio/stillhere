@@ -99,10 +99,10 @@ function landingPage(): string {
     <h2 class="text-3xl md:text-4xl font-bold mb-4">下载 晴好</h2>
     <p class="text-slate-500 mb-12">选择你的设备平台，开始守护之旅。</p>
     <div class="grid md:grid-cols-2 gap-6 max-w-lg mx-auto">
-      <a href="#" class="flex flex-col items-center gap-3 bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:border-orange-200 hover:shadow-md transition">
-        <span class="text-4xl"></span>
+      <a href="https://apps.apple.com/us/app/%E6%99%B4%E5%A5%BD-%E4%BA%92%E7%9B%B8%E5%AE%88%E6%8A%A4/id6794597733" target="_blank" rel="noopener" class="flex flex-col items-center gap-3 bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:border-orange-200 hover:shadow-md transition">
+        <span class="text-4xl"></span>
         <span class="font-semibold text-lg">iOS App Store</span>
-        <span class="text-slate-400 text-sm">即将上架</span>
+        <span class="text-slate-400 text-sm">前往 App Store 下载</span>
       </a>
       <a href="/qhao-release.apk" class="flex flex-col items-center gap-3 bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:border-emerald-200 hover:shadow-md transition">
         <span class="text-4xl">🤖</span>

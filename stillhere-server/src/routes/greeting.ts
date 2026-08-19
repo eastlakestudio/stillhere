@@ -82,7 +82,7 @@ async function sendGreetingPush(env: Env, fromUserId: string, toCode: string, me
     await sendApnsAlert({
       env,
       deviceToken: token,
-      title: '安好 · 问安',
+      title: '晴好 · 问安',
       body: `${fromCode} 向你问安${message !== '问安' ? '：' + message : ''}`,
       badge: 1,
     });
@@ -173,8 +173,8 @@ async function sendReplyPush(env: Env, fromDeviceId: string, toCode: string, rep
     await sendApnsAlert({
       env,
       deviceToken: user.device_token,
-      title: '安好 · 回复',
-      body: reply === '安好' ? '安好 ✓' : reply,
+      title: '晴好 · 回复',
+      body: reply === '晴好' ? '晴好 ✓' : reply,
       badge: 0,
     });
   } catch (e: any) {

@@ -304,6 +304,29 @@ actor Reporter {
 
     // MARK: - Helpers
 
+    /// 保存设备配置到服务端（守护时段、告警阈值、时区等，供服务端裁决告警）
+    /// 传入 config 序列化后的 JSON Data（Swift 6 并发安全）
+    func saveConfig(json: Data) async -> Bool {
+        let url = URL(string: "\(baseURL)/config")!
+        do {
+            let cfg = try JSONSerialization.jsonObject(with: json)
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            let body: [String: Any] = ["deviceId": deviceId, "config": cfg]
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+            request.timeoutInterval = 10
+            let (_, response) = try await URLSession.shared.data(for: request)
+            if let http = response as? HTTPURLResponse {
+                return (200..<300).contains(http.statusCode)
+            }
+            return false
+        } catch {
+            print("[Reporter] saveConfig ERROR: \(error.localizedDescription)")
+            return false
+        }
+    }
+
     private static func loadOrCreateDeviceId() -> String {
         let key = "anhao.spike.deviceId"
 

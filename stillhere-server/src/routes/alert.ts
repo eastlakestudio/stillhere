@@ -59,7 +59,7 @@ export async function handleAlert(request: Request, env: Env): Promise<Response>
             await sendApnsAlert({
               env,
               deviceToken: carer.device_token,
-              title: '安好 · 活动已恢复',
+              title: '晴好 · 活动已恢复',
               body: '您关心的用户已恢复活动 ✓',
               badge: 0,
             });
@@ -96,7 +96,7 @@ export async function handleAlert(request: Request, env: Env): Promise<Response>
           await sendApnsAlert({
             env,
             deviceToken: carer.device_token,
-            title: '安好 · 活动超时提醒',
+            title: '晴好 · 活动超时提醒',
             body: bodyText,
             badge: 1,
           });

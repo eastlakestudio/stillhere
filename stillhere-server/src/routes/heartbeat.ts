@@ -1,4 +1,5 @@
 import { Env, jsonResponse, now } from '../shared';
+import { notifyCarers } from '../cron/watchdog';
 
 /**
  * POST /heartbeat
@@ -65,6 +66,19 @@ export async function handleHeartbeat(request: Request, env: Env): Promise<Respo
       'SELECT COUNT(*) as count FROM care_relations WHERE to_code = ?1'
     ).bind(validCode).first<{ count: number }>();
     caredByCount = caredByResult?.count || 0;
+
+    // 自动解除未决的 idle/stale 告警（服务端裁决或客户端上报的）并推送恢复通知
+    const unresolved = await env.DB.prepare(
+      "SELECT COUNT(*) as c FROM alerts WHERE user_id = ?1 AND is_resolved = 0 AND alert_type IN ('idle', 'stale')"
+    ).bind(userId).first<{ c: number }>();
+    if ((unresolved?.c || 0) > 0) {
+      await env.DB.prepare(
+        "UPDATE alerts SET is_resolved = 1, resolved_at = ?1 WHERE user_id = ?2 AND is_resolved = 0 AND alert_type IN ('idle', 'stale')"
+      ).bind(ts, userId).run();
+      if (caredByCount > 0) {
+        await notifyCarers(env, validCode, '晴好 · 活动已恢复', '您关心的用户已恢复活动 ✓', 0);
+      }
+    }
 
     // 如果之前离线，插入上线恢复告警
     if (wasOffline && caredByCount > 0) {
