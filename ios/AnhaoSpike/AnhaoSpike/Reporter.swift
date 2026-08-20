@@ -284,16 +284,16 @@ actor Reporter {
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let history = json["history"] as? [[String: Any]] else { return [] }
         return history.compactMap { g in
-            guard let id = g["id"] as? Int64,
-                  let fromCareCode = g["fromCareCode"] as? String else { return nil }
+            guard let fromCareCode = g["fromCareCode"] as? String else { return nil }
+            let id = (g["id"] as? NSNumber)?.int64Value ?? (g["id"] as? Int64) ?? 0
             return GreetingHistoryItem(
                 id: id,
                 fromCareCode: fromCareCode,
                 displayName: g["displayName"] as? String ?? fromCareCode,
                 message: g["message"] as? String ?? "问安",
                 reply: g["reply"] as? String,
-                repliedAt: g["repliedAt"] as? Int64,
-                createdAt: g["createdAt"] as? Int64 ?? 0,
+                repliedAt: (g["repliedAt"] as? NSNumber)?.int64Value ?? (g["repliedAt"] as? Int64),
+                createdAt: (g["createdAt"] as? NSNumber)?.int64Value ?? (g["createdAt"] as? Int64) ?? 0,
                 isReply: g["isReply"] as? Bool ?? false
             )
         }
