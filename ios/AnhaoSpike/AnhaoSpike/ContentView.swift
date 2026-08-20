@@ -321,7 +321,7 @@ struct ContentView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Image("AppIconMark")
                         .resizable()
-                        .scaledToFill()
+                        .scaledToFit()
                         .frame(width: 48, height: 48)
                         .clipShape(RoundedRectangle(cornerRadius: 11))
                 }
