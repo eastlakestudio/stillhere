@@ -317,16 +317,8 @@ struct ContentView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // App 图标（左侧，与标题同排，放大 1.5x）
+                // 标题「晴好」居左（放大 1.5x）
                 ToolbarItem(placement: .topBarLeading) {
-                    Image("AppIconMark")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 48, height: 48)
-                        .clipShape(RoundedRectangle(cornerRadius: 11))
-                }
-                // 标题（放大 1.5x，居中）
-                ToolbarItem(placement: .principal) {
                     Text("晴好")
                         .font(.system(size: 27, weight: .bold))
                 }
