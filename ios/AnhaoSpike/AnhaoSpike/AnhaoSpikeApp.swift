@@ -39,17 +39,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         print("[APNs] register failed: \(error.localizedDescription)")
     }
 
-    nonisolated func userNotificationCenter(
+nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        // 前台收到问安推送 → 广播触发拉取最新问安
-        if notification.request.identifier.hasPrefix("greeting") || notification.request.content.categoryIdentifier.contains("greeting") {
-            Task { @MainActor in
-                NotificationCenter.default.post(name: .greetingPushReceived, object: nil)
-            }
-        }
+        handleGreetingNotification(notification.request.content.userInfo)
         completionHandler([.banner, .sound, .badge])
     }
 
@@ -58,11 +53,27 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) async {
-        // 点按/展示后触发拉取
-        Task { @MainActor in
-            NotificationCenter.default.post(name: .greetingPushReceived, object: nil)
-        }
+        handleGreetingNotification(response.notification.request.content.userInfo)
         completionHandler()
+    }
+
+    /// 解析问安推送 payload：data 段随通知广播，由界面层写入本地缓存（不查服务器）
+    nonisolated private func handleGreetingNotification(_ userInfo: [AnyHashable: Any]) {
+        var payload: [String: String] = [:]
+        if let data = userInfo["data"] as? [String: Any] {
+            for (k, v) in data {
+                switch v {
+                case let s as String: payload[k] = s
+                case let n as NSNumber: payload[k] = n.stringValue
+                case let b as Bool: payload[k] = b ? "true" : "false"
+                default: break
+                }
+            }
+        }
+        let data = payload
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .greetingPushReceived, object: data)
+        }
     }
 }
 

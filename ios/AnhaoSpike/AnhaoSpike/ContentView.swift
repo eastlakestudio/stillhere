@@ -351,9 +351,15 @@ struct ContentView: View {
                 }
             }
             .task {
-                // 收到问安推送时即时下拉一次（真机 APNs 驱动，无需高频轮询）
-                for await _ in NotificationCenter.default.notifications(named: .greetingPushReceived) {
-                    await fetchGreetings()
+                // 收到问安推送：优先用 payload data 直接写本地缓存（不查服务器），无 data 才走 pending 兜底
+                for await note in NotificationCenter.default.notifications(named: .greetingPushReceived) {
+                    if let data = note.object as? [String: String], !data.isEmpty {
+                        await Reporter.shared.saveGreetingFromPush(data: data, careCode: shortBindCode)
+                        greetingHistory = await Reporter.shared.cachedGreetingHistory(careCode: shortBindCode)
+                        showGreetingHistory = true
+                    } else {
+                        await fetchGreetings()
+                    }
                 }
             }
             .task {
@@ -413,7 +419,8 @@ struct ContentView: View {
                     .presentationDetents([.medium, .large])
             }
             .sheet(isPresented: $showGreetingHistory) {
-                GreetingHistorySheet(history: greetingHistory)
+                let caringDict = Dictionary(uniqueKeysWithValues: careStore.caring.map { ($0.bindCode, $0.name) })
+                GreetingHistorySheet(history: greetingHistory, caringDict: caringDict)
                     .presentationDetents([.medium, .large])
             }
             .sheet(isPresented: $showTimeWindowConfig) {
@@ -1478,6 +1485,7 @@ struct GreetingReplySheet: View {
 
 struct GreetingHistorySheet: View {
     let history: [GreetingHistoryItem]
+    let caringDict: [String: String]  // careCode → nickname（本地「我关心的」昵称）
 
     @Environment(\.dismiss) private var dismiss
 
@@ -1502,7 +1510,7 @@ struct GreetingHistorySheet: View {
                         .padding(.top, 60)
                     } else {
                         ForEach(history) { h in
-                            GreetingHistoryRow(item: h, timeStampText: timeStampText)
+                            GreetingHistoryRow(item: h, caringDict: caringDict, timeStampText: timeStampText)
                         }
                     }
                 }
@@ -1521,16 +1529,24 @@ struct GreetingHistorySheet: View {
 
 private struct GreetingHistoryRow: View {
     let item: GreetingHistoryItem
+    let caringDict: [String: String]  // careCode → nickname
     let timeStampText: (Int64) -> String
 
     private var isNew: Bool {
         item.reply == nil && !item.isReply
     }
 
+    /// 展示名优先级：本地昵称（接收方起的）→ 服务端解析昵称 → 关心码
+    private var displayLabel: String {
+        if let nick = caringDict[item.fromCareCode], !nick.isEmpty { return nick }
+        if !item.displayName.isEmpty, item.displayName != item.fromCareCode { return item.displayName }
+        return item.fromCareCode
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
-                Text(item.displayName.isEmpty ? item.fromCareCode : item.displayName)
+                Text(displayLabel)
                     .font(.body)
                     .fontWeight(.semibold)
                 Text(isNew ? "向你问安" : "答复了你")

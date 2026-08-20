@@ -337,6 +337,51 @@ actor Reporter {
         }
     }
 
+    /// 从 APNs 推送 data 段解析一条问安/回复并写入本地历史缓存（不请求网络）
+    func saveGreetingFromPush(data: [String: String], careCode: String) {
+        let greetingId = Int64(data["greetingId"] ?? "") ?? 0
+        let fromCareCode = data["fromCareCode"] ?? ""
+        guard greetingId > 0, !fromCareCode.isEmpty else { return }
+        let message = data["message"] ?? "问安"
+        let createdAt = Int64(data["createdAt"] ?? "") ?? Int64(Date().timeIntervalSince1970)
+        let displayName = data["displayName"] ?? fromCareCode
+        let isReply = data["isReply"] == "true"
+
+        let cutoff = Int64(Date().timeIntervalSince1970) - 7 * 86400
+        var all = cachedGreetingHistory(careCode: careCode)
+        let existingIds = Set(all.map { $0.id })
+        if !existingIds.contains(greetingId) {
+            let item = GreetingHistoryItem(
+                id: greetingId,
+                fromCareCode: fromCareCode,
+                displayName: displayName,
+                message: message,
+                reply: nil,
+                repliedAt: nil,
+                createdAt: createdAt,
+                isReply: isReply
+            )
+            all.append(item)
+            all = all.filter { $0.createdAt >= cutoff }.sorted { $0.id > $1.id }
+            let dict = ["history": all.map { it -> [String: Any] in
+                var d: [String: Any] = [
+                    "id": it.id,
+                    "fromCareCode": it.fromCareCode,
+                    "displayName": it.displayName,
+                    "message": it.message,
+                    "createdAt": it.createdAt,
+                    "isReply": it.isReply,
+                ]
+                if let reply = it.reply { d["reply"] = reply }
+                if let repliedAt = it.repliedAt { d["repliedAt"] = repliedAt }
+                return d
+            }]
+            if let cacheData = try? JSONSerialization.data(withJSONObject: dict) {
+                UserDefaults.standard.set(cacheData, forKey: greetingHistoryCacheKey(careCode))
+            }
+        }
+    }
+
     /// 拉取未回复的问安消息，返回后同步追加到本地历史缓存
     func fetchPendingGreetings(careCode: String) async -> [PendingGreeting] {
         let url = URL(string: "\(baseURL)/pending-greetings?careCode=\(careCode)")!
