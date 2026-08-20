@@ -51,6 +51,7 @@ export default {
           return await handleConfig(request, env);
         case '/greeting':
         case '/greeting/reply':
+        case '/greeting-history':
         case '/pending-greetings':
           return await handleGreeting(request, env);
         case '/auth/login':

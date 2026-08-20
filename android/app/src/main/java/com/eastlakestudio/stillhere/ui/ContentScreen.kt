@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
@@ -32,6 +33,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -64,6 +66,7 @@ import androidx.navigation.compose.rememberNavController
 import com.eastlakestudio.stillhere.StillHereApp
 import com.eastlakestudio.stillhere.data.CareRelation
 import com.eastlakestudio.stillhere.data.CarerInfo
+import com.eastlakestudio.stillhere.data.GreetingHistoryItem
 import com.eastlakestudio.stillhere.data.PendingGreeting
 import com.eastlakestudio.stillhere.data.Reporter
 import com.google.zxing.BarcodeFormat
@@ -116,6 +119,8 @@ fun HomeScreen(
 
     // 问安相关
     var pendingGreetings by remember { mutableStateOf<List<PendingGreeting>>(emptyList()) }
+    var greetingHistory by remember { mutableStateOf<List<GreetingHistoryItem>>(emptyList()) }
+    var showGreetingHistory by remember { mutableStateOf(false) }
     var showGreetingReply by remember { mutableStateOf(false) }
 
     val qrBitmap = remember(shortBindCode) {
@@ -157,12 +162,12 @@ fun HomeScreen(
         app.careStore.refreshCaredStatus()
     }
 
-    // 前台期间每 3 秒发送心跳（失败会显示在 UI 上）
+    // 前台期间低频心跳（受距离上次心跳 gap 限制，防拖动服务器过载）
     LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(30_000)
+        kotlinx.coroutines.delay(60_000)
         while (true) {
             app.monitorManager.sendHeartbeatNow()
-            kotlinx.coroutines.delay(3_000)
+            kotlinx.coroutines.delay(60_000)
         }
     }
 
@@ -174,10 +179,10 @@ fun HomeScreen(
         }
     }
 
-    // 轮询问安消息（3 秒轮询）
+    // 轮询问安消息（低频兜底：Android 无 APNs 推送，问安记录存本地缓存，5 分钟一次防丢）
     val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
     LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(5000)
+        kotlinx.coroutines.delay(60_000)
         while (true) {
             val gs = Reporter.fetchPendingGreetings(shortBindCode)
             if (gs.isNotEmpty() && !showGreetingReply) {
@@ -194,7 +199,7 @@ fun HomeScreen(
                 prefs.edit().putString("anhao.spike.notifiedGreetingIds", allIds.joinToString(",")).apply()
             }
             app.careStore.refreshCaredStatus()
-            kotlinx.coroutines.delay(3_000)
+            kotlinx.coroutines.delay(5 * 60 * 1000L)
         }
     }
 
@@ -454,6 +459,27 @@ fun HomeScreen(
                 }
             }
 
+            // ── 问安记录入口 ──
+            item {
+                OutlinedButton(
+                    onClick = {
+                        // 纯本地缓存读取，不查服务器
+                        greetingHistory = Reporter.cachedGreetingHistory()
+                        showGreetingHistory = true
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Filled.History,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("问安记录", style = MaterialTheme.typography.labelLarge)
+                }
+            }
+
             // ── 被关心卡片 ──
             item {
                 CaredByCard(
@@ -625,6 +651,14 @@ fun HomeScreen(
             onDismiss = {
                 showGreetingReply = false
             }
+        )
+    }
+
+    // 问安记录弹窗
+    if (showGreetingHistory) {
+        GreetingHistorySheet(
+            history = greetingHistory,
+            onDismiss = { showGreetingHistory = false }
         )
     }
 

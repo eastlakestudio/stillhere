@@ -8,6 +8,8 @@ export interface ApnsPayload {
   title: string;
   body: string;
   badge?: number;
+  /** 附加的业务数据（会原样出现在 payload 的 data 段，客户端据此落本地缓存） */
+  data?: Record<string, unknown>;
 }
 
 /**
@@ -16,7 +18,7 @@ export interface ApnsPayload {
  * 使用 Web Crypto API 签名 ES256 JWT，无需依赖 npm apn 包。
  */
 export async function sendApnsAlert(payload: ApnsPayload): Promise<void> {
-  const { env, deviceToken, title, body, badge } = payload;
+  const { env, deviceToken, title, body, badge, data } = payload;
 
   const jwt = await signJwt({
     p8key: env.APNS_P8_KEY,
@@ -44,6 +46,7 @@ export async function sendApnsAlert(payload: ApnsPayload): Promise<void> {
         badge,
         sound: 'default',
       },
+      data: data || {},
     }),
   });
 

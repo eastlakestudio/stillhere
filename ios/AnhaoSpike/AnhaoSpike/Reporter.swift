@@ -272,7 +272,72 @@ actor Reporter {
         }
     }
 
-    /// 拉取未回复的问安消息
+    /// 拉取问安历史（收到的全部问安，含已回复）
+    /// 问安历史本地缓存 key（按 careCode 分区）
+    private func greetingHistoryCacheKey(_ careCode: String) -> String {
+        return "anhao.spike.greetingHistory.\(careCode)"
+    }
+
+    /// 读取本地缓存的历史（不请求网络），无缓存返回空
+    func cachedGreetingHistory(careCode: String) -> [GreetingHistoryItem] {
+        guard let data = UserDefaults.standard.data(forKey: greetingHistoryCacheKey(careCode)) else { return [] }
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let history = json["history"] as? [[String: Any]] else { return [] }
+        return history.compactMap { g in
+            guard let id = g["id"] as? Int64,
+                  let fromCareCode = g["fromCareCode"] as? String else { return nil }
+            return GreetingHistoryItem(
+                id: id,
+                fromCareCode: fromCareCode,
+                displayName: g["displayName"] as? String ?? fromCareCode,
+                message: g["message"] as? String ?? "问安",
+                reply: g["reply"] as? String,
+                repliedAt: g["repliedAt"] as? Int64,
+                createdAt: g["createdAt"] as? Int64 ?? 0,
+                isReply: g["isReply"] as? Bool ?? false
+            )
+        }
+    }
+
+    /// 将新到的问安追加进本地历史缓存（按 id 去重、按 id 倒序、仅保留 7 天）
+    private func appendGreetingsToHistory(careCode: String, newItems: [PendingGreeting]) {
+        guard !newItems.isEmpty else { return }
+        let cutoff = Int64(Date().timeIntervalSince1970) - 7 * 86400
+        var all = cachedGreetingHistory(careCode: careCode)
+        let existingIds = Set(all.map { $0.id })
+        for p in newItems where !existingIds.contains(p.id) {
+            all.append(GreetingHistoryItem(
+                id: p.id,
+                fromCareCode: p.fromCareCode,
+                displayName: p.fromCareCode,
+                message: p.message,
+                reply: nil,
+                repliedAt: nil,
+                createdAt: p.createdAt,
+                isReply: p.isReply
+            ))
+        }
+        // 仅保留最近 7 天 + 按 id 倒序
+        all = all.filter { $0.createdAt >= cutoff }.sorted { $0.id > $1.id }
+        let dict = ["history": all.map { item -> [String: Any] in
+            var d: [String: Any] = [
+                "id": item.id,
+                "fromCareCode": item.fromCareCode,
+                "displayName": item.displayName,
+                "message": item.message,
+                "createdAt": item.createdAt,
+                "isReply": item.isReply,
+            ]
+            if let reply = item.reply { d["reply"] = reply }
+            if let repliedAt = item.repliedAt { d["repliedAt"] = repliedAt }
+            return d
+        }]
+        if let data = try? JSONSerialization.data(withJSONObject: dict) {
+            UserDefaults.standard.set(data, forKey: greetingHistoryCacheKey(careCode))
+        }
+    }
+
+    /// 拉取未回复的问安消息，返回后同步追加到本地历史缓存
     func fetchPendingGreetings(careCode: String) async -> [PendingGreeting] {
         let url = URL(string: "\(baseURL)/pending-greetings?careCode=\(careCode)")!
         do {
@@ -285,17 +350,19 @@ actor Reporter {
                   let greetings = json["greetings"] as? [[String: Any]] else {
                 return []
             }
-            return greetings.compactMap { g in
-                guard let id = g["id"] as? Int64,
+            let result: [PendingGreeting] = greetings.compactMap { g in
+                guard let id = (g["id"] as? NSNumber)?.int64Value ?? (g["id"] as? Int64),
                       let fromCareCode = g["fromCareCode"] as? String else { return nil }
                 return PendingGreeting(
                     id: id,
                     fromCareCode: fromCareCode,
                     message: g["message"] as? String ?? "问安",
-                    createdAt: g["createdAt"] as? Int64 ?? 0,
+                    createdAt: (g["createdAt"] as? NSNumber)?.int64Value ?? (g["createdAt"] as? Int64) ?? 0,
                     isReply: g["isReply"] as? Bool ?? false
                 )
             }
+            appendGreetingsToHistory(careCode: careCode, newItems: result)
+            return result
         } catch {
             print("[Reporter] fetchPendingGreetings ERROR: \(error.localizedDescription)")
             return []
@@ -404,6 +471,18 @@ struct PendingGreeting: Identifiable {
     let message: String
     let createdAt: Int64     // Unix 秒
     let isReply: Bool        // true = 答复消息, false = 主动问安
+}
+
+/// 历史问安记录（收到的全部问安，含已回复）
+struct GreetingHistoryItem: Identifiable {
+    let id: Int64
+    let fromCareCode: String
+    let displayName: String  // 接收方视角昵称（服务端解析，无昵称回退关心码）
+    let message: String
+    let reply: String?
+    let repliedAt: Int64?
+    let createdAt: Int64     // Unix 秒
+    let isReply: Bool
 }
 
 // MARK: - 关心码哈希派生

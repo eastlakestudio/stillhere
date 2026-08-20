@@ -29,6 +29,7 @@ object Reporter {
     private const val DEFAULT_WORKER_URL = "https://api.padap.cn"
     private const val PREF_KEY_DEVICE_ID = "anhao.spike.deviceId"
     private const val PREF_KEY_BASE_URL = "anhao.spike.baseURL"
+    private const val KEY_GREETING_HISTORY = "anhao.spike.greetingHistory"
 
     private val gson = Gson()
     private val client = OkHttpClient.Builder()
@@ -402,7 +403,7 @@ object Reporter {
         }
     }
 
-    /** 拉取未回复的问安消息 */
+    /** 拉取未回复的问安消息，成功后将新问安追加到本地历史缓存 */
     suspend fun fetchPendingGreetings(careCode: String): List<PendingGreeting> = withContext(Dispatchers.IO) {
         try {
             val request = Request.Builder()
@@ -415,7 +416,7 @@ object Reporter {
                 if (!resp.isSuccessful) return@withContext emptyList()
                 val json = gson.fromJson(resp.body?.string(), Map::class.java)
                 val greetings = json["greetings"] as? List<*> ?: return@withContext emptyList()
-                greetings.mapNotNull { g ->
+                val result = greetings.mapNotNull { g ->
                     val m = g as? Map<*, *> ?: return@mapNotNull null
                     PendingGreeting(
                         id = (m["id"] as? Double)?.toLong() ?: 0,
@@ -425,11 +426,48 @@ object Reporter {
                         isReply = m["isReply"] as? Boolean ?: false
                     )
                 }
+                appendToLocalHistory(result)
+                result
             }
         } catch (e: Exception) {
             android.util.Log.e("Reporter", "fetchPendingGreetings failed: ${e.message}")
             emptyList()
         }
+    }
+
+    /** 读取本地缓存的问安历史（不请求网络） */
+    fun cachedGreetingHistory(): List<GreetingHistoryItem> {
+        val raw = prefs.getString(KEY_GREETING_HISTORY, null) ?: return emptyList()
+        return try {
+            val type = object : com.google.gson.reflect.TypeToken<List<GreetingHistoryItem>>() {}.type
+            gson.fromJson<List<GreetingHistoryItem>>(raw, type) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    /** 将新问安合并进本地历史缓存（按 id 去重、倒序、仅保留 7 天） */
+    private fun appendToLocalHistory(newItems: List<PendingGreeting>) {
+        if (newItems.isEmpty()) return
+        val cutoff = System.currentTimeMillis() / 1000 - 7 * 86400
+        val all = cachedGreetingHistory().toMutableList()
+        val existingIds = all.map { it.id }.toSet()
+        newItems.forEach { p ->
+            if (p.id !in existingIds) {
+                all.add(GreetingHistoryItem(
+                    id = p.id,
+                    fromCareCode = p.fromCareCode,
+                    displayName = p.fromCareCode,
+                    message = p.message,
+                    reply = null,
+                    repliedAt = null,
+                    createdAt = p.createdAt,
+                    isReply = p.isReply
+                ))
+            }
+        }
+        val filtered = all.filter { it.createdAt >= cutoff }.sortedByDescending { it.id }
+        prefs.edit().putString(KEY_GREETING_HISTORY, gson.toJson(filtered)).apply()
     }
 
     private fun loadOrCreateDeviceId(): String {
@@ -490,6 +528,18 @@ data class PendingGreeting(
     val message: String,
     val createdAt: Long,     // Unix 秒
     val isReply: Boolean = false  // true = 答复消息, false = 主动问安
+)
+
+/** 历史问安记录（收到的全部问安，含已回复） */
+data class GreetingHistoryItem(
+    val id: Long,
+    val fromCareCode: String,
+    val displayName: String = "",
+    val message: String,
+    val reply: String? = null,
+    val repliedAt: Long? = null,
+    val createdAt: Long = 0,
+    val isReply: Boolean = false
 )
 
 /** 服务端返回的关心关系（用于恢复） */

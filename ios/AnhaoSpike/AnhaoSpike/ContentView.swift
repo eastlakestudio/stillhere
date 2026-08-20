@@ -23,6 +23,8 @@ struct ContentView: View {
     // 问安
     @State private var pendingGreetings: [PendingGreeting] = []
     @State private var showGreetingReply = false
+    @State private var greetingHistory: [GreetingHistoryItem] = []
+    @State private var showGreetingHistory = false
     @State private var addCarePreFillCode: String? = nil
     @State private var toastMessage: String?
     @State private var toastTask: Task<Void, Never>?
@@ -111,6 +113,28 @@ struct ContentView: View {
                             .padding()
                             .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
                         }
+
+                        // MARK: - 问安记录入口（仅展示本地缓存，不实时查服务端）
+                        Button {
+                            greetingHistory = Reporter.shared.cachedGreetingHistory(careCode: shortBindCode)
+                            showGreetingHistory = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "message.fill")
+                                    .foregroundStyle(.blue)
+                                Text("问安记录")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote)
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                        .buttonStyle(.plain)
 
                         // MARK: - 被关心卡片（点击弹窗显示关心码）
                         CaredByCard(
@@ -327,25 +351,23 @@ struct ContentView: View {
                 }
             }
             .task {
-                // 首次 1 秒后快速拉取
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
-                while !Task.isCancelled {
+                // 收到问安推送时即时下拉一次（真机 APNs 驱动，无需高频轮询）
+                for await _ in NotificationCenter.default.notifications(named: .greetingPushReceived) {
                     await fetchGreetings()
+                }
+            }
+            .task {
+                // 低频兜底轮询（防推送丢失）：前台 10 分钟，避免拖垮服务端
+                try? await Task.sleep(nanoseconds: 10_000_000_000)
+                while !Task.isCancelled {
                     await careStore.refreshCaredStatus()
-                    // 前台 60s，后台 60s
-                    try? await Task.sleep(nanoseconds: 60_000_000_000)
+                    await fetchGreetings()
+                    try? await Task.sleep(nanoseconds: scenePhase == .active ? 600_000_000_000 : 3_600_000_000_000)
                 }
             }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .active {
                     Task { await fetchGreetings() }
-                }
-            }
-            .task {
-                // 前台期间每 60 秒心跳（startAll/reportForeground 已含启动即时心跳）
-                while !Task.isCancelled {
-                    try? await Task.sleep(nanoseconds: scenePhase == .active ? 60_000_000_000 : 360_000_000_000)
-                    manager.sendHeartbeatNow()
                 }
             }
             .sheet(isPresented: $showAddCare) {
@@ -388,6 +410,10 @@ struct ContentView: View {
                         }
                     }
                 )
+                    .presentationDetents([.medium, .large])
+            }
+            .sheet(isPresented: $showGreetingHistory) {
+                GreetingHistorySheet(history: greetingHistory)
                     .presentationDetents([.medium, .large])
             }
             .sheet(isPresented: $showTimeWindowConfig) {
@@ -1445,6 +1471,95 @@ struct GreetingReplySheet: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - 问安历史弹窗
+
+struct GreetingHistorySheet: View {
+    let history: [GreetingHistoryItem]
+
+    @Environment(\.dismiss) private var dismiss
+
+    private func timeStampText(_ ts: Int64) -> String {
+        let d = Date(timeIntervalSince1970: TimeInterval(ts))
+        return d.formatted(date: .numeric, time: .shortened)
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    if history.isEmpty {
+                        VStack(spacing: 8) {
+                            Image(systemName: "tray")
+                                .font(.largeTitle)
+                                .foregroundStyle(.tertiary)
+                            Text("还没有问安记录")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.top, 60)
+                    } else {
+                        ForEach(history) { h in
+                            GreetingHistoryRow(item: h, timeStampText: timeStampText)
+                        }
+                    }
+                }
+                .padding(20)
+            }
+            .navigationTitle("问安记录")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("关闭") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+private struct GreetingHistoryRow: View {
+    let item: GreetingHistoryItem
+    let timeStampText: (Int64) -> String
+
+    private var isNew: Bool {
+        item.reply == nil && !item.isReply
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Text(item.displayName.isEmpty ? item.fromCareCode : item.displayName)
+                    .font(.body)
+                    .fontWeight(.semibold)
+                Text(isNew ? "向你问安" : "答复了你")
+                    .font(.body)
+                    .foregroundStyle(isNew ? Color.primary : Color.purple)
+            }
+            Text(item.message)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            if let reply = item.reply, !reply.isEmpty {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrowshape.turn.up.left.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.green)
+                    Text("你回复：\(reply)")
+                        .font(.footnote)
+                        .foregroundStyle(.green)
+                }
+            }
+            if item.createdAt > 0 {
+                Text(timeStampText(item.createdAt))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 

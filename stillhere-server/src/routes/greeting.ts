@@ -8,12 +8,18 @@ async function toCareCode(deviceId: string): Promise<string> {
   return hex.slice(8, 14).toUpperCase();
 }
 
-/** 通过关心码查找设备（用于推送时返回 device_token 和 deviceId） */
+/** 通过关心码查找设备（返回 deviceId 和 device_token） */
 async function findDeviceByCode(env: Env, careCode: string): Promise<{ id: string; device_token: string | null } | null> {
-  const { results } = await env.DB.prepare(
-    'SELECT id, device_token FROM users WHERE device_token IS NOT NULL AND device_token != \'\''
-  ).all<{ id: string; device_token: string }>();
+  // 优先用 users.care_code 冗余列精确匹配（无需 device_token，模拟器等无推送设备也能命中）
+  const byCode = await env.DB.prepare(
+    'SELECT id, device_token FROM users WHERE care_code = ?1 AND care_code != \'\' LIMIT 1'
+  ).bind(careCode).first<{ id: string; device_token: string | null }>();
+  if (byCode) return byCode;
 
+  // 兜底：遍历并按 SHA-256 派生匹配（兼容 care_code 列未上报的老数据）
+  const { results } = await env.DB.prepare(
+    'SELECT id, device_token FROM users'
+  ).all<{ id: string; device_token: string | null }>();
   if (!results) return null;
   for (const row of results) {
     if ((await toCareCode(row.id)) === careCode) {
@@ -103,6 +109,7 @@ async function sendGreetingPush(env: Env, fromUserId: string, toCode: string, me
   const fromCode = await findCareCodeByDeviceId(env, fromUserId);
   // 若接收方已互相关心（给发送者起了昵称），用昵称替代关心码
   const displayName = fromUserId ? await resolveDisplayName(env, target.id, fromCode) : fromCode;
+  const nowTs = now();
   try {
     await sendApnsAlert({
       env,
@@ -110,6 +117,14 @@ async function sendGreetingPush(env: Env, fromUserId: string, toCode: string, me
       title: '晴好 · 问安',
       body: `${displayName} 向你问安${message !== '问安' ? '：' + message : ''}`,
       badge: 1,
+      data: {
+        greetingId,
+        fromCareCode: fromCode,
+        displayName,
+        message,
+        createdAt: nowTs,
+        isReply: false,
+      },
     });
   } catch (e: any) {
     console.error(`[greeting] APNs push failed: ${e.message}`);
@@ -156,7 +171,7 @@ async function handleReplyGreeting(request: Request, env: Env): Promise<Response
   ).bind(replyText, ts, greetingId).run();
 
   // 异步推送回复通知给发起方
-  sendReplyPush(env, greeting.from_device_id, greeting.to_code, replyText).catch(e =>
+  sendReplyPush(env, greeting.from_device_id, greeting.to_code, replyText, greetingId).catch(e =>
     console.error(`[greeting] reply push failed: ${e.message}`)
   );
 
@@ -178,7 +193,7 @@ async function handleReplyGreeting(request: Request, env: Env): Promise<Response
   return jsonResponse({ ok: true });
 }
 
-async function sendReplyPush(env: Env, fromDeviceId: string, toCode: string, reply: string) {
+async function sendReplyPush(env: Env, fromDeviceId: string, toCode: string, reply: string, greetingId?: number) {
   // 查找发起方的 device_token
   const user = await env.DB.prepare(
     'SELECT device_token FROM users WHERE id = ?1 AND device_token IS NOT NULL AND device_token != \'\''
@@ -199,6 +214,14 @@ async function sendReplyPush(env: Env, fromDeviceId: string, toCode: string, rep
       title: '晴好 · 回复',
       body: reply === '晴好' ? `${displayName} 回复：晴好 ✓` : `${displayName} 回复：${reply}`,
       badge: 0,
+      data: {
+        greetingId: greetingId ?? 0,
+        fromCareCode: toCode,
+        displayName,
+        message: reply,
+        createdAt: now(),
+        isReply: true,
+      },
     });
   } catch (e: any) {
     console.error(`[greeting] reply APNs push failed: ${e.message}`);
@@ -250,6 +273,63 @@ async function handlePendingGreetings(request: Request, env: Env): Promise<Respo
 }
 
 /**
+ * GET /greeting-history?careCode=XXXXXX&days=7
+ * 查询该关心码收到的问安历史（含已回复/未回复、反向回复记录），不标记 notified，
+ * 默认返回最近 7 天，days 可指定 1-90。
+ */
+async function handleGreetingHistory(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const careCode = url.searchParams.get('careCode');
+
+  if (!careCode || careCode.trim().length !== 6) {
+    return jsonResponse({ error: 'careCode is required (6 chars)' }, 400);
+  }
+
+  const code = careCode.trim().toUpperCase();
+
+  // 时间窗（秒）：默认 7 天
+  const daysParam = parseInt(url.searchParams.get('days') || '7', 10);
+  const days = Number.isFinite(daysParam) ? Math.min(Math.max(daysParam, 1), 90) : 7;
+  const since = now() - days * 86400;
+
+  // 接收方收到的问安：原始问安（reply_to_id IS NULL）+ 反向回复记录（reply_to_id NOT NULL）
+  const greetings = await env.DB.prepare(
+    'SELECT id, from_device_id, message, reply, replied_at, created_at, reply_to_id FROM greetings WHERE to_code = ?1 AND created_at >= ?2 ORDER BY id DESC LIMIT 100'
+  ).bind(code, since).all<{
+    id: number; from_device_id: string; message: string; reply: string | null;
+    replied_at: number | null; created_at: number; reply_to_id: number | null;
+  }>();
+
+  if (!greetings.results || greetings.results.length === 0) {
+    return jsonResponse({ history: [] });
+  }
+
+  // 接收方自身 deviceId（用于解析接收方视角的发送者昵称）
+  const viewerDevice = await findDeviceByCode(env, code);
+
+  const result = await Promise.all(
+    (greetings.results ?? []).map(async (g) => {
+      const fromCareCode = await toCareCode(g.from_device_id);
+      const displayName = viewerDevice
+        ? await resolveDisplayName(env, viewerDevice.id, fromCareCode)
+        : fromCareCode;
+      return {
+        id: g.id,
+        fromCareCode,
+        displayName,
+        message: g.message,
+        reply: g.reply || null,
+        repliedAt: g.replied_at || null,
+        createdAt: g.created_at,
+        isReply: g.reply_to_id != null,
+      };
+    })
+  );
+
+  return jsonResponse({ history: result });
+}
+
+/**
  * 主路由分发
  */
 export async function handleGreeting(request: Request, env: Env): Promise<Response> {
@@ -261,6 +341,14 @@ export async function handleGreeting(request: Request, env: Env): Promise<Respon
       return jsonResponse({ error: 'method not allowed' }, 405);
     }
     return handleReplyGreeting(request, env);
+  }
+
+  // GET /greeting-history?careCode=...
+  if (url.pathname === '/greeting-history') {
+    if (request.method !== 'GET') {
+      return jsonResponse({ error: 'method not allowed' }, 405);
+    }
+    return handleGreetingHistory(request, env);
   }
 
   // GET /greeting?careCode=... or /pending-greetings?careCode=...

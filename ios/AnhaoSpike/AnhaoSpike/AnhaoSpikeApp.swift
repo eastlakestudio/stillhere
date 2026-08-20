@@ -1,6 +1,11 @@
 import SwiftUI
 import UserNotifications
 
+/// 收到问安推送时广播，触发界面拉取问安消息
+extension Notification.Name {
+    static let greetingPushReceived = Notification.Name("greetingPushReceived")
+}
+
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     func application(
@@ -39,7 +44,25 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
+        // 前台收到问安推送 → 广播触发拉取最新问安
+        if notification.request.identifier.hasPrefix("greeting") || notification.request.content.categoryIdentifier.contains("greeting") {
+            Task { @MainActor in
+                NotificationCenter.default.post(name: .greetingPushReceived, object: nil)
+            }
+        }
         completionHandler([.banner, .sound, .badge])
+    }
+
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) async {
+        // 点按/展示后触发拉取
+        Task { @MainActor in
+            NotificationCenter.default.post(name: .greetingPushReceived, object: nil)
+        }
+        completionHandler()
     }
 }
 
