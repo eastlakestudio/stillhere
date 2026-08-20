@@ -315,13 +315,9 @@ struct ContentView: View {
                 .padding(.bottom, 8)
                 .background(Color(.systemBackground))
             }
+            .navigationTitle("晴好")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // 标题「晴好」居左（放大 1.5x）
-                ToolbarItem(placement: .topBarLeading) {
-                    Text("晴好")
-                        .font(.system(size: 27, weight: .bold))
-                }
                 // 问安记录（标题栏最右侧，放大 1.5x）
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

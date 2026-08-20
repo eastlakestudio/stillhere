@@ -20,6 +20,15 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
                 }
             }
         }
+        // 统一放大 NavigationBar 标题（inline 模式，约 1.5x）
+        let navAppearance = UINavigationBarAppearance()
+        navAppearance.configureWithDefaultBackground()
+        navAppearance.titleTextAttributes = [
+            .font: UIFont.systemFont(ofSize: 26, weight: .bold),
+        ]
+        UINavigationBar.appearance().standardAppearance = navAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
+        UINavigationBar.appearance().compactAppearance = navAppearance
         return true
     }
 
