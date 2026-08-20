@@ -57,6 +57,9 @@ class MainActivity : ComponentActivity() {
         if (allGranted()) {
             StillHereApp.instance.monitorManager.startLocationMonitors()
         }
+        // 用户已打开 App，清除所有本地通知与角标
+        val nm = getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
+        nm.cancelAll()
     }
 
     private fun requestNextPermission() {

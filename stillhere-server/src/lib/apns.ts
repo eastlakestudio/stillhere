@@ -1,6 +1,6 @@
 import { Env } from '../shared';
 
-const APNS_BASE = 'https://api.push.apple.com';
+const DEFAULT_APNS_BASE = 'https://api.push.apple.com';
 
 export interface ApnsPayload {
   env: Env;
@@ -26,7 +26,10 @@ export async function sendApnsAlert(payload: ApnsPayload): Promise<void> {
 
   const topic = env.APP_BUNDLE_ID;
 
-  const resp = await fetch(`${APNS_BASE}/3/device/${deviceToken}`, {
+  // 本地/测试环境可注入 APNS_BASE 指向 mock 服务器
+  const apnsBase = (env as any).APNS_BASE || DEFAULT_APNS_BASE;
+
+  const resp = await fetch(`${apnsBase}/3/device/${deviceToken}`, {
     method: 'POST',
     headers: {
       'Authorization': `bearer ${jwt}`,

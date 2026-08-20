@@ -352,6 +352,8 @@ final class MonitorManager: ObservableObject, Sendable {
 
     func reportForeground() {
         wake(source: "Foreground", event: "app entered foreground")
+        // 清除角标（App 已打开，无需提示")
+        UIApplication.shared.applicationIconBadgeNumber = 0
         // 前台切入立即发送心跳（让关心人看到"刚刚活跃"）
         sendHeartbeatNow()
         // 检查本地告警

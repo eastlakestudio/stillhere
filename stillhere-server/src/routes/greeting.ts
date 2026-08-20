@@ -8,8 +8,8 @@ async function toCareCode(deviceId: string): Promise<string> {
   return hex.slice(8, 14).toUpperCase();
 }
 
-/** 通过关心码查找设备的 device_token（用于推送） */
-async function findDeviceTokenByCode(env: Env, careCode: string): Promise<string | null> {
+/** 通过关心码查找设备（用于推送时返回 device_token 和 deviceId） */
+async function findDeviceByCode(env: Env, careCode: string): Promise<{ id: string; device_token: string | null } | null> {
   const { results } = await env.DB.prepare(
     'SELECT id, device_token FROM users WHERE device_token IS NOT NULL AND device_token != \'\''
   ).all<{ id: string; device_token: string }>();
@@ -17,7 +17,7 @@ async function findDeviceTokenByCode(env: Env, careCode: string): Promise<string
   if (!results) return null;
   for (const row of results) {
     if ((await toCareCode(row.id)) === careCode) {
-      return row.device_token;
+      return row;
     }
   }
   return null;
@@ -70,20 +70,45 @@ async function findCareCodeByDeviceId(env: Env, deviceId: string): Promise<strin
   return '------';
 }
 
+/**
+ * 解析推送文案中的名字：
+ * 优先用 viewer 给 targetCode 起的昵称（若已互相关心，昵称存在 viewer 的 device_config.nicknames 里），
+ * 否则回退为关心码。
+ */
+async function resolveDisplayName(env: Env, viewerDeviceId: string, targetCode: string): Promise<string> {
+  try {
+    const row = await env.DB.prepare(
+      'SELECT config_json FROM device_config WHERE device_id = ?1'
+    ).bind(viewerDeviceId).first<{ config_json: string }>();
+    if (row?.config_json) {
+      const cfg = JSON.parse(row.config_json);
+      const nicknames = cfg?.nicknames;
+      if (nicknames && typeof nicknames[targetCode] === 'string' && nicknames[targetCode] !== '') {
+        return nicknames[targetCode];
+      }
+    }
+  } catch (e: any) {
+    console.error(`[greeting] resolveDisplayName failed: ${e.message}`);
+  }
+  return targetCode;
+}
+
 async function sendGreetingPush(env: Env, fromUserId: string, toCode: string, message: string, greetingId: number) {
-  const token = await findDeviceTokenByCode(env, toCode);
-  if (!token) {
+  const target = await findDeviceByCode(env, toCode);
+  if (!target?.device_token) {
     console.log(`[greeting] no device_token for code ${toCode}`);
     return;
   }
 
   const fromCode = await findCareCodeByDeviceId(env, fromUserId);
+  // 若接收方已互相关心（给发送者起了昵称），用昵称替代关心码
+  const displayName = fromUserId ? await resolveDisplayName(env, target.id, fromCode) : fromCode;
   try {
     await sendApnsAlert({
       env,
-      deviceToken: token,
+      deviceToken: target.device_token,
       title: '晴好 · 问安',
-      body: `${fromCode} 向你问安${message !== '问安' ? '：' + message : ''}`,
+      body: `${displayName} 向你问安${message !== '问安' ? '：' + message : ''}`,
       badge: 1,
     });
   } catch (e: any) {
@@ -164,17 +189,15 @@ async function sendReplyPush(env: Env, fromDeviceId: string, toCode: string, rep
     return;
   }
 
-  // 回复方的关心码
-  const replyCode = await findCareCodeByDeviceId(env, fromDeviceId);
-  // 实际上这里需要的是接收方（即回复方to_code对应的人）的关心码来展示
-  // 简化：直接用 toCode 作为回复者
+  // 发起方视角里回复者的名字：优先昵称（已互相关心时）否则关心码
+  const displayName = await resolveDisplayName(env, fromDeviceId, toCode);
 
   try {
     await sendApnsAlert({
       env,
       deviceToken: user.device_token,
       title: '晴好 · 回复',
-      body: reply === '晴好' ? '晴好 ✓' : reply,
+      body: reply === '晴好' ? `${displayName} 回复：晴好 ✓` : `${displayName} 回复：${reply}`,
       badge: 0,
     });
   } catch (e: any) {

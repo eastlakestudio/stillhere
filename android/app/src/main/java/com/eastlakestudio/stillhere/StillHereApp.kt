@@ -109,6 +109,7 @@ class StillHereApp : Application() {
     fun syncToCloud() {
         syncScope.launch {
             try {
+                val nicknames = careStore.caring.value.associate { it.bindCode to it.name }
                 val config = mapOf(
                     "monitoringWindows" to monitorManager.monitoringWindows.map {
                         mapOf(
@@ -122,7 +123,7 @@ class StillHereApp : Application() {
                     "idleAlertMinutes" to monitorManager.idleAlertMinutes,
                     "ignoreChargingForAlert" to monitorManager.ignoreChargingForAlert,
                     "timezoneOffsetMinutes" to (java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 60000),
-                    "nicknames" to careStore.caring.value.associate { it.bindCode to it.name }
+                    "nicknames" to nicknames
                 )
                 Reporter.saveConfig(config)
             } catch (e: Exception) {
