@@ -316,8 +316,14 @@ final class MonitorManager: ObservableObject, Sendable {
     }
 
     private func checkAndSendHeartbeat() {
+        // 心跳间隔必须小于静置告警阈值，否则 watchdog 会在正常使用中误判静置。
+        // 取阈值的一半作为心跳周期（保证阈值窗口内至少覆盖一次心跳），并限制在 [5, 60] 分钟。
+        let thresholdMinutes = max(idleAlertMinutes, 5)
+        let desiredMinutes = min(max(thresholdMinutes / 2, 5), 60)
+        let desiredSeconds = TimeInterval(desiredMinutes * 60)
+
         let elapsed = Date().timeIntervalSince(lastHeartbeatTime)
-        if elapsed >= 3600 { // 1 小时
+        if elapsed >= desiredSeconds {
             sendHeartbeat()
         }
     }
