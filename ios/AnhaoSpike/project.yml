@@ -42,3 +42,14 @@ targets:
         CURRENT_PROJECT_VERSION: "4"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: "1"
+schemes:
+  AnhaoSpike:
+    build:
+      targets:
+        AnhaoSpike: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+      archiveName: AnhaoSpike
+      revealArchiveInOrganizer: false

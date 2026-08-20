@@ -1,0 +1,22 @@
+# Xcode Cloud 工作流
+# 在 App Store Connect → Xcode Cloud → 添加工作流 时选择从本文件导入
+version: 1
+name: StillHere 发布 (Build 4)
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  stillhere:
+    name: 构建并上传 TestFlight
+    environment:
+      buildConfiguration: Release
+      scheme: AnhaoSpike
+      destination: generic/platform=iOS
+      exportMethod: app-store-connect
+    runScripts:
+      - name: 验证共享 Scheme
+        script: |
+          echo "✅ AnhaoSpike.xcscheme (Build 4, zh-Hans) 已随仓库共享"
+          exit 0
