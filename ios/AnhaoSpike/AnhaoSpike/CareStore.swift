@@ -57,6 +57,26 @@ final class CareStore: ObservableObject {
         load()
     }
 
+    /// 从服务端恢复「我关心的人」（重装/换机后恢复；不覆盖已存在的本地关系）
+    func syncFromServer() async {
+        let devId = await Reporter.shared.deviceId
+        let remote = await Reporter.shared.fetchCaring(deviceId: devId)
+        guard !remote.isEmpty else { return }
+        let existingCodes = Set(caring.map { $0.bindCode })
+        let newOnes = remote.filter { !existingCodes.contains($0.bindCode) }
+        guard !newOnes.isEmpty else { return }
+        for r in newOnes {
+            caring.append(CareRelation(
+                id: UUID().uuidString,
+                name: r.name.isEmpty ? r.bindCode : r.name,
+                bindCode: r.bindCode,
+                bindDate: Date()
+            ))
+        }
+        save()
+        print("[CareStore] synced \(newOnes.count) relations from server, total caring=\(caring.count)")
+    }
+
     // MARK: - 我关心
 
     func addCaring(name: String, bindCode: String) {

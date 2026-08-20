@@ -198,6 +198,30 @@ actor Reporter {
 
     // MARK: - 关注我的人
 
+    /// 从服务端恢复「我关心的人」列表（重装/换机后恢复关心关系）
+    func fetchCaring(deviceId: String) async -> [(bindCode: String, name: String)] {
+        let url = URL(string: "\(baseURL)/caring?deviceId=\(deviceId)")!
+        do {
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            request.timeoutInterval = 10
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let caring = json["caring"] as? [[String: Any]] else {
+                print("[Reporter] fetchCaring failed/empty: \(response)")
+                return []
+            }
+            return caring.compactMap { c in
+                guard let code = c["bindCode"] as? String else { return nil }
+                return (bindCode: code, name: c["name"] as? String ?? "")
+            }
+        } catch {
+            print("[Reporter] fetchCaring ERROR: \(error.localizedDescription)")
+            return []
+        }
+    }
+
     /// 查询关注自己的关心码列表
     func fetchCaredByMe(careCode: String) async -> [CarerInfo] {
         let url = URL(string: "\(baseURL)/cared-by-me?careCode=\(careCode)")!
@@ -280,7 +304,10 @@ actor Reporter {
 
     /// 读取本地缓存的历史（不请求网络），无缓存返回空
     nonisolated func cachedGreetingHistory(careCode: String) -> [GreetingHistoryItem] {
-        guard let data = UserDefaults.standard.data(forKey: greetingHistoryCacheKey(careCode)) else { return [] }
+        guard let data = UserDefaults.standard.data(forKey: greetingHistoryCacheKey(careCode)) else {
+            print("[Reporter] cachedGreetingHistory MISS: key=\(greetingHistoryCacheKey(careCode))")
+            return []
+        }
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let history = json["history"] as? [[String: Any]] else { return [] }
         return history.compactMap { g in
@@ -341,6 +368,7 @@ actor Reporter {
     func saveGreetingFromPush(data: [String: String], careCode: String) {
         let greetingId = Int64(data["greetingId"] ?? "") ?? 0
         let fromCareCode = data["fromCareCode"] ?? ""
+        print("[Reporter] saveGreetingFromPush careCode=\(careCode) id=\(greetingId) from=\(fromCareCode) msg=\(data["message"] ?? "")")
         guard greetingId > 0, !fromCareCode.isEmpty else { return }
         let message = data["message"] ?? "问安"
         let createdAt = Int64(data["createdAt"] ?? "") ?? Int64(Date().timeIntervalSince1970)

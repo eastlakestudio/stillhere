@@ -322,12 +322,15 @@ struct ContentView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         Task {
+                            print("[GreetingHistory] button tapped: deviceId=\(deviceId) shortBindCode=\(shortBindCode)")
                             // 确保 deviceId 已就绪（首次进入时异步加载），避免 careCode 算出错误缓存 key
                             if deviceId.isEmpty {
                                 deviceId = await Reporter.shared.deviceId
+                                print("[GreetingHistory] deviceId loaded: \(deviceId) code=\(deviceId.toCareCode())")
                             }
                             let code = deviceId.toCareCode()
                             greetingHistory = Reporter.shared.cachedGreetingHistory(careCode: code)
+                            print("[GreetingHistory] cached read -> \(greetingHistory.count) items, key=\(code)")
                             showGreetingHistory = true
                         }
                     } label: {
@@ -341,6 +344,8 @@ struct ContentView: View {
                 deviceId = await Reporter.shared.deviceId
                 manager.startAll()
                 await careStore.refreshCaredStatus()
+                // 从服务端恢复关心列表（重装/换机后恢复本地没有的关系，不覆盖已有）
+                await careStore.syncFromServer()
                 // 请求通知权限
                 _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
             }
