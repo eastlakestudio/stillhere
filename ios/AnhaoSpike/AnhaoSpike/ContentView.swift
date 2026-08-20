@@ -338,6 +338,14 @@ struct ContentView: View {
                 .background(Color(.systemBackground))
             }
             .navigationTitle("晴好")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Image(systemName: "heart.fill")
+                        .foregroundStyle(.pink)
+                        .font(.title3)
+                }
+            }
             .task {
                 deviceId = await Reporter.shared.deviceId
                 manager.startAll()
@@ -1516,11 +1524,17 @@ struct GreetingHistorySheet: View {
                 }
                 .padding(20)
             }
-            .navigationTitle("问安记录")
+            .navigationTitle("最近问安记录")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("关闭") { dismiss() }
+                }
+                // 标题栏右侧图标（右对齐）
+                ToolbarItem(placement: .topBarTrailing) {
+                    Image(systemName: "message.fill")
+                        .foregroundStyle(.blue)
+                        .font(.body)
                 }
             }
         }
