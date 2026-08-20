@@ -315,24 +315,29 @@ struct ContentView: View {
                 .padding(.bottom, 8)
                 .background(Color(.systemBackground))
             }
-            .navigationTitle("晴好")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // App 图标（左侧，与标题同排）
+                // App 图标（左侧，与标题同排，放大 1.5x）
                 ToolbarItem(placement: .topBarLeading) {
                     Image("AppIconMark")
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 32, height: 32)
-                        .clipShape(RoundedRectangle(cornerRadius: 7))
+                        .frame(width: 48, height: 48)
+                        .clipShape(RoundedRectangle(cornerRadius: 11))
                 }
-                // 问安记录（标题栏最右侧）
+                // 标题（放大 1.5x，居中）
+                ToolbarItem(placement: .principal) {
+                    Text("晴好")
+                        .font(.system(size: 27, weight: .bold))
+                }
+                // 问安记录（标题栏最右侧，放大 1.5x）
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         greetingHistory = Reporter.shared.cachedGreetingHistory(careCode: shortBindCode)
                         showGreetingHistory = true
                     } label: {
                         Image(systemName: "message.fill")
+                            .font(.system(size: 27))
                             .foregroundStyle(.blue)
                     }
                 }
