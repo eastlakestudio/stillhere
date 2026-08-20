@@ -318,14 +318,14 @@ struct ContentView: View {
             .navigationTitle("晴好")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // 问安记录（标题栏最右侧，放大 1.5x）
+                // 问安记录（标题栏最右侧）
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         greetingHistory = Reporter.shared.cachedGreetingHistory(careCode: shortBindCode)
                         showGreetingHistory = true
                     } label: {
                         Image(systemName: "message.fill")
-                            .font(.system(size: 27))
+                            .font(.system(size: 22))
                             .foregroundStyle(.blue)
                     }
                 }
