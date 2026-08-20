@@ -114,28 +114,6 @@ struct ContentView: View {
                             .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
                         }
 
-                        // MARK: - 问安记录入口（仅展示本地缓存，不实时查服务端）
-                        Button {
-                            greetingHistory = Reporter.shared.cachedGreetingHistory(careCode: shortBindCode)
-                            showGreetingHistory = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "message.fill")
-                                    .foregroundStyle(.blue)
-                                Text("问安记录")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.footnote)
-                                    .foregroundStyle(.tertiary)
-                            }
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                        .buttonStyle(.plain)
-
                         // MARK: - 被关心卡片（点击弹窗显示关心码）
                         CaredByCard(
                             count: careStore.caredByCount,
@@ -338,12 +316,25 @@ struct ContentView: View {
                 .background(Color(.systemBackground))
             }
             .navigationTitle("晴好")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // App 图标（左侧，与标题同排）
                 ToolbarItem(placement: .topBarLeading) {
-                    Image(systemName: "heart.fill")
-                        .foregroundStyle(.pink)
-                        .font(.title3)
+                    Image("AppIconMark")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 32, height: 32)
+                        .clipShape(RoundedRectangle(cornerRadius: 7))
+                }
+                // 问安记录（标题栏最右侧）
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        greetingHistory = Reporter.shared.cachedGreetingHistory(careCode: shortBindCode)
+                        showGreetingHistory = true
+                    } label: {
+                        Image(systemName: "message.fill")
+                            .foregroundStyle(.blue)
+                    }
                 }
             }
             .task {
