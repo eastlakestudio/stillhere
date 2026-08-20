@@ -16,38 +16,43 @@ final class ChargingMonitor: NSObject, Monitor, @unchecked Sendable {
     }
 
     func start() {
-        UIDevice.current.isBatteryMonitoringEnabled = true
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(batteryStateChanged),
-            name: UIDevice.batteryStateDidChangeNotification,
-            object: nil
-        )
-        // 启动时上报一次当前状态
-        batteryStateChanged()
+        MainActor.assumeIsolated {
+            UIDevice.current.isBatteryMonitoringEnabled = true
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(batteryStateChanged),
+                name: UIDevice.batteryStateDidChangeNotification,
+                object: nil
+            )
+            batteryStateChanged()
+        }
     }
 
     func stop() {
-        NotificationCenter.default.removeObserver(
-            self,
-            name: UIDevice.batteryStateDidChangeNotification,
-            object: nil
-        )
-        UIDevice.current.isBatteryMonitoringEnabled = false
+        MainActor.assumeIsolated {
+            NotificationCenter.default.removeObserver(
+                self,
+                name: UIDevice.batteryStateDidChangeNotification,
+                object: nil
+            )
+            UIDevice.current.isBatteryMonitoringEnabled = false
+        }
     }
 
     @objc private func batteryStateChanged() {
-        let state = UIDevice.current.batteryState
-        let level = UIDevice.current.batteryLevel
-        let levelPct = level >= 0 ? "\(Int(level * 100))%" : "?"
-        let desc: String
-        switch state {
-        case .unknown:     desc = "unknown"
-        case .unplugged:   desc = "unplugged"
-        case .charging:    desc = "charging"
-        case .full:        desc = "full"
-        @unknown default:  desc = "unknown"
+        MainActor.assumeIsolated {
+            let state = UIDevice.current.batteryState
+            let level = UIDevice.current.batteryLevel
+            let levelPct = level >= 0 ? "\(Int(level * 100))%" : "?"
+            let desc: String
+            switch state {
+            case .unknown:     desc = "unknown"
+            case .unplugged:   desc = "unplugged"
+            case .charging:    desc = "charging"
+            case .full:        desc = "full"
+            @unknown default:  desc = "unknown"
+            }
+            onWake(identifier, "battery: \(desc), level: \(levelPct)")
         }
-        onWake(identifier, "battery: \(desc), level: \(levelPct)")
     }
 }

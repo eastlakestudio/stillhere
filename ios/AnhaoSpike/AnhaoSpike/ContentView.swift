@@ -319,7 +319,7 @@ struct ContentView: View {
                 manager.startAll()
                 await careStore.refreshCaredStatus()
                 // 请求通知权限
-                try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
+                _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
             }
             .task(id: careStore.caredByCount) {
                 if careStore.caredByCount > 0 {
@@ -873,9 +873,8 @@ final class QRScannerController: UIViewController, AVCaptureMetadataOutputObject
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.session.startRunning()
-        }
+        // AVCaptureSession 非 Sendable；startRunning 在主线程执行（首次短暂阻塞可接受）
+        session.startRunning()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
