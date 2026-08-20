@@ -210,11 +210,11 @@ final class MonitorManager: ObservableObject, Sendable {
         return monitoringWindows.contains { $0.contains(minutes: minutes) }
     }
 
-    /// 空闲告警阈值（分钟），默认 30
+    /// 空闲告警阈值（分钟），最短 1 小时（60），默认 60
     var idleAlertMinutes: Int {
-        get { max(UserDefaults.standard.integer(forKey: "anhao.spike.idleAlertMinutes"), 5) }
+        get { max(UserDefaults.standard.integer(forKey: "anhao.spike.idleAlertMinutes"), 60) }
         set {
-            UserDefaults.standard.set(newValue, forKey: "anhao.spike.idleAlertMinutes")
+            UserDefaults.standard.set(max(newValue, 60), forKey: "anhao.spike.idleAlertMinutes")
             syncConfigToCloud()
         }
     }
@@ -237,7 +237,7 @@ final class MonitorManager: ObservableObject, Sendable {
     init() {
         // 默认值
         if UserDefaults.standard.integer(forKey: "anhao.spike.idleAlertMinutes") == 0 {
-            idleAlertMinutes = 30
+            idleAlertMinutes = 60
         }
 
         // 启动时从 UserDefaults 恢复自定义 URL

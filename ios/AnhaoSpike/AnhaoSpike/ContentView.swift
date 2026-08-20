@@ -1690,7 +1690,7 @@ struct TimeWindowConfigSheet: View {
                                 .font(.body)
                                 .fontWeight(.semibold)
 
-                            Slider(value: $idleSliderValue, in: 5...120, step: 1) {
+                            Slider(value: $idleSliderValue, in: 60...120, step: 1) {
                                 Text("阈值")
                             }
                             .tint(.blue)

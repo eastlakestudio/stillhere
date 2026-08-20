@@ -36,7 +36,7 @@ export async function runWatchdog(env: Env): Promise<void> {
     let cfg: any;
     try { cfg = JSON.parse(cfgRow.config_json); } catch { continue; }
 
-    const threshold = Number(cfg.idleAlertMinutes) || 30;
+    const threshold = Math.max(Number(cfg.idleAlertMinutes) || 60, 60);
     const windows: any[] = Array.isArray(cfg.monitoringWindows) ? cfg.monitoringWindows : [];
     if (windows.length === 0) continue; // 未配置时段 → 兜底
 
