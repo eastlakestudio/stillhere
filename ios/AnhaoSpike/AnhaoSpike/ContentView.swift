@@ -321,8 +321,15 @@ struct ContentView: View {
                 // 问安记录（标题栏最右侧）
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        greetingHistory = Reporter.shared.cachedGreetingHistory(careCode: shortBindCode)
-                        showGreetingHistory = true
+                        Task {
+                            // 确保 deviceId 已就绪（首次进入时异步加载），避免 careCode 算出错误缓存 key
+                            if deviceId.isEmpty {
+                                deviceId = await Reporter.shared.deviceId
+                            }
+                            let code = deviceId.toCareCode()
+                            greetingHistory = Reporter.shared.cachedGreetingHistory(careCode: code)
+                            showGreetingHistory = true
+                        }
                     } label: {
                         Image(systemName: "message.fill")
                             .font(.system(size: 22))

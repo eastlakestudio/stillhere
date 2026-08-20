@@ -274,12 +274,12 @@ actor Reporter {
 
     /// 拉取问安历史（收到的全部问安，含已回复）
     /// 问安历史本地缓存 key（按 careCode 分区）
-    private func greetingHistoryCacheKey(_ careCode: String) -> String {
+    nonisolated private func greetingHistoryCacheKey(_ careCode: String) -> String {
         return "anhao.spike.greetingHistory.\(careCode)"
     }
 
     /// 读取本地缓存的历史（不请求网络），无缓存返回空
-    func cachedGreetingHistory(careCode: String) -> [GreetingHistoryItem] {
+    nonisolated func cachedGreetingHistory(careCode: String) -> [GreetingHistoryItem] {
         guard let data = UserDefaults.standard.data(forKey: greetingHistoryCacheKey(careCode)) else { return [] }
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let history = json["history"] as? [[String: Any]] else { return [] }
